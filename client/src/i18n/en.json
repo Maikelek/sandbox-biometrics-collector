@@ -1,0 +1,20 @@
+{
+    "register": "Register",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "password-repeat": "Repeat Password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "agree": "Agree",
+    "show-biometric-terms": "Show biometric data terms",
+    "biometric-consent-title": "Consent to biometric data processing",
+    "biometric-consent-text": "By proceeding, you agree to the processing of your biometric data for authentication and personalization purposes.\n\nThis data will be securely stored and never shared with third parties.\n\nYou can revoke this consent at any time by contacting the data controller.",
+    "biometric-consent-required": "You must agree to biometric data processing to continue.",
+    "form-submitted": "Form successfully submitted!",
+  
+    "error-name": "Name cannot be empty.",
+    "error-email": "Please enter a valid email address.",
+    "error-password": "Password must be at least 6 characters.",
+    "error-password-match": "Passwords do not match."
+  }

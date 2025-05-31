@@ -3,3 +3,41 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+.holder-sign {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.top-bar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.register-form {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 600px) {
+  .register-form {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+

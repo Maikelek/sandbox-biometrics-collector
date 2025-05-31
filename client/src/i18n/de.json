@@ -1,0 +1,20 @@
+{
+    "register": "Registrieren",
+    "name": "Name",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "password-repeat": "Passwort wiederholen",
+    "submit": "Absenden",
+    "cancel": "Abbrechen",
+    "agree": "Zustimmen",
+    "show-biometric-terms": "Biometrische Bedingungen anzeigen",
+    "biometric-consent-title": "Einwilligung zur Verarbeitung biometrischer Daten",
+    "biometric-consent-required": "Sie müssen der Verarbeitung biometrischer Daten zustimmen, um fortzufahren.",
+    "form-submitted": "Formular erfolgreich abgeschickt!",
+    "biometric-consent-text": "Mit der Fortsetzung stimmen Sie der Verarbeitung Ihrer biometrischen Daten zu Zwecken der Authentifizierung und Personalisierung zu.\n\nDiese Daten werden sicher gespeichert und niemals an Dritte weitergegeben.\n\nSie können diese Einwilligung jederzeit widerrufen, indem Sie den Datenschutzbeauftragten kontaktieren.",
+
+    "error-name": "Name kann nicht leer sein.",
+    "error-email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "error-password": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+    "error-password-match": "Passwords do not match."
+  }
