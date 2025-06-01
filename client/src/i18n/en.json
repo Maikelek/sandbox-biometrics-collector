@@ -16,5 +16,11 @@
     "error-name": "Name cannot be empty.",
     "error-email": "Please enter a valid email address.",
     "error-password": "Password must be at least 6 characters.",
-    "error-password-match": "Passwords do not match."
+    "error-password-match": "Passwords do not match.",
+
+    "no-account": "Don't have an account?",
+    "register-here": "Register here",
+    "have-account": "Already have an account?",
+    "login-here": "Login here",
+    "login": "Login"
   }

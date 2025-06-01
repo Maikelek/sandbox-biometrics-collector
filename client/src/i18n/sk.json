@@ -1,0 +1,26 @@
+{
+    "register": "Registrácia",
+    "name": "Meno",
+    "email": "E-Mail",
+    "password": "Heslo",
+    "password-repeat": "Zopakovanie heslo",
+    "submit": "Odoslať",
+    "cancel": "Zrušiť",
+    "agree": "Súhlasím",
+    "show-biometric-terms": "Zobraziť podmienky spracovania biometrických údajov",
+    "biometric-consent-title": "Súhlas so spracovaním biometrických údajov",
+    "biometric-consent-required": "Musíte súhlasiť so spracovaním biometrických údajov, aby ste mohli pokračovať.",
+    "form-submitted": "Formulár bol úspešne odoslaný!",
+    "biometric-consent-text": "Pokračovaním súhlasíte so spracovaním vašich biometrických údajov na účely autentifikácie a personalizácie.\n\nTieto údaje budú bezpečne uložené a nikdy nebudú zdieľané s tretími stranami.\n\nSúhlas môžete kedykoľvek odvolať kontaktovaním správcu údajov.",
+
+    "error-name": "Meno nesmie byť prázdne.",
+    "error-email": "Prosím zadajte platnú e-mailovú adresu.",
+    "error-password": "Heslo musí mať aspoň 6 znakov.",
+    "error-password-match": "Heslá sa nezhodujú.",
+
+    "no-account": "Nemáte účet?",
+    "register-here": "Zaregistrujte sa tu",
+    "have-account": "Už máte účet?",
+    "login-here": "Prihláste sa tu",
+    "login": "Prihlásenie"
+  }

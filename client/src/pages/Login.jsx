@@ -1,0 +1,148 @@
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    ToggleButton,
+    ToggleButtonGroup,
+    IconButton,
+    CssBaseline,
+    ThemeProvider,
+    Paper,
+    Alert
+} from '@mui/material';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { createTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
+import '../i18n';
+
+const Login = () => {
+    const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+    const [mode, setMode] = useState(() => {
+        return localStorage.getItem('themeMode') || 'light';
+    });
+    const theme = useMemo(() => createTheme({ palette: { mode } }), [mode]);
+    const toggleMode = () => {
+        setMode(prev => {
+          const newMode = prev === 'light' ? 'dark' : 'light';
+          localStorage.setItem('themeMode', newMode);
+          return newMode;
+        });
+    };
+
+    const handleLangChange = (_, lang) => lang && i18n.changeLanguage(lang);
+
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+
+    const [errors, setErrors] = useState({});
+    const [loginError, setLoginError] = useState('');
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: '' }));
+        setLoginError('');
+    };
+
+    const validate = () => {
+        const newErrors = {};
+        if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = t('error-email');
+        if (formData.password.length < 6) newErrors.password = t('error-password');
+        return newErrors;
+    };
+
+    const handleSubmit = () => {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
+        console.log('Logging in:', formData);
+
+        if (formData.email !== 'test@example.com' || formData.password !== 'password123') {
+            setLoginError(t('invalid-credentials'));
+        } else {
+            setLoginError('');
+            alert(t('login-success'));
+        }
+    };
+
+    return (
+    <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className="top-bar">
+            <ToggleButtonGroup value={i18n.language} exclusive onChange={handleLangChange}>
+                <ToggleButton value="en">EN</ToggleButton>
+                <ToggleButton value="sk">SK</ToggleButton>
+            </ToggleButtonGroup>
+            <IconButton onClick={toggleMode}>
+                {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+        </div>
+
+        <div className="holder-sign">
+            <Paper elevation={6} className="register-form" sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+                <Typography variant="h4" gutterBottom align="center">
+                    {t('login')}
+                </Typography>
+
+                {loginError && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {loginError}
+                    </Alert>
+                )}
+
+                <TextField
+                    label={t('email')}
+                    name="email"
+                    fullWidth
+                    margin="normal"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={Boolean(errors.email)}
+                    helperText={errors.email}
+                />
+                <TextField
+                    label={t('password')}
+                    name="password"
+                    type="password"
+                    fullWidth
+                    margin="normal"
+                    value={formData.password}
+                    onChange={handleChange}
+                    error={Boolean(errors.password)}
+                    helperText={errors.password}
+                />
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    onClick={handleSubmit}
+                >
+                    {t('submit')}
+                </Button>
+                <Box mt={2} textAlign="center">
+                    <Typography variant="body2">
+                            {t('no-account')}{' '}
+                        <Button variant="text" onClick={() => navigate('/register')}>
+                            {t('register-here')}
+                        </Button>
+                    </Typography>
+                </Box>
+            </Paper>
+        </div>
+
+    </ThemeProvider>
+  );
+};
+
+export default Login;
