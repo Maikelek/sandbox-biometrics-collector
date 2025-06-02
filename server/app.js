@@ -33,6 +33,8 @@ app.get("/", (req, res) => {
 })
 
 /* Routes */
+const registerRouter = require('./routes/registerRouter');
+app.use('/register', registerRouter);
 
 /* Application port*/ 
 app.listen(process.env.PORT, () => {      

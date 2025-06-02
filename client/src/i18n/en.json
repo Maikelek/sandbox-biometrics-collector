@@ -19,8 +19,10 @@
     "error-password-match": "Passwords do not match.",
 
     "no-account": "Don't have an account?",
+    "login": "Login",
+    "validation-code": "Validation Code",
     "register-here": "Register here",
     "have-account": "Already have an account?",
     "login-here": "Login here",
-    "login": "Login"
+    "registered": "You have been successfully registered! Check your email for validation code."
   }

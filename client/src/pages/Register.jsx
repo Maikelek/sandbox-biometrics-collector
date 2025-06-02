@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Box,
   Typography,
@@ -26,6 +27,7 @@ import '../i18n';
 
 const Register = () => {
   const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
   const { t, i18n } = useTranslation();
   const [mode, setMode] = useState(() => {
     return localStorage.getItem('themeMode') || 'light';
@@ -84,17 +86,45 @@ const Register = () => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validationErrors = validate();
-    if (!consent) {
-      setShowAlert(true);
-    }
+    if (!consent) setShowAlert(true);
+    else setShowAlert(false);
+  
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    if (consent) {
-      setShowAlert(false);
+  
+    try {
+      const res = await axios.post("http://localhost:1234/register", {
+        ...formData,
+        biometricConsent: consent,
+      });
+  
+      if (res.status === 200) {
+        setSuccess(true);
+        setShowAlert(true);
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message;
+      if (msg) {
+        const errMap = {};
+  
+        if (msg.toLowerCase().includes("nick")) errMap.name = msg;
+        else if (msg.toLowerCase().includes("email")) errMap.email = msg;
+        else if (msg.toLowerCase().includes("password")) {
+          if (msg.toLowerCase().includes("match")) errMap.passwordRepeat = msg;
+          else errMap.password = msg;
+        } else if (msg.toLowerCase().includes("biometric")) {
+          setShowAlert(true);
+        }
+  
+        setErrors(errMap);
+      } else {
+        console.error(error);
+        alert("Unknown error occurred.");
+      }
     }
   };
 
@@ -130,8 +160,8 @@ const Register = () => {
             <Divider sx={{ my: 2 }} />
 
             {showAlert && (
-              <Alert severity="error" onClose={() => setShowAlert(false)} sx={{ mb: 2 }}>
-                {t('biometric-consent-required')}
+              <Alert severity={success ? "success" : "error"} onClose={() => setShowAlert(false)} sx={{ mb: 2 }}>
+                {success ? t('registered') : t('biometric-consent-required')}
               </Alert>
             )}
 

@@ -21,6 +21,7 @@ import '../i18n';
 const Login = () => {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
+    const [isFirstLogin, setIsFirstLogin] = useState(true);
     const [mode, setMode] = useState(() => {
         return localStorage.getItem('themeMode') || 'light';
     });
@@ -37,7 +38,8 @@ const Login = () => {
 
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        validation: ''
     });
 
     const [errors, setErrors] = useState({});
@@ -121,6 +123,19 @@ const Login = () => {
                     helperText={errors.password}
                 />
 
+                {isFirstLogin && (
+                    <TextField
+                    label={t('validation-code')}
+                    name="validation"
+                    fullWidth
+                    margin="normal"
+                    value={formData.password}
+                    onChange={handleChange}
+                    error={Boolean(errors.password)}
+                    helperText={errors.password}
+                />)
+                }
+
                 <Button
                     variant="contained"
                     color="primary"
@@ -130,6 +145,7 @@ const Login = () => {
                 >
                     {t('submit')}
                 </Button>
+
                 <Box mt={2} textAlign="center">
                     <Typography variant="body2">
                             {t('no-account')}{' '}

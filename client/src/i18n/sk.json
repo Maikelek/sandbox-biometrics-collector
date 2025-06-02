@@ -3,7 +3,7 @@
     "name": "Meno",
     "email": "E-Mail",
     "password": "Heslo",
-    "password-repeat": "Zopakovanie heslo",
+    "password-repeat": "Zopakovanie hesla",
     "submit": "Odoslať",
     "cancel": "Zrušiť",
     "agree": "Súhlasím",
@@ -19,8 +19,11 @@
     "error-password-match": "Heslá sa nezhodujú.",
 
     "no-account": "Nemáte účet?",
+    "login": "Prihlásenie",
+    "validation-code": "Overovací kód",
     "register-here": "Zaregistrujte sa tu",
     "have-account": "Už máte účet?",
     "login-here": "Prihláste sa tu",
-    "login": "Prihlásenie"
+    "registered": "Úspešne ste sa zaregistrovali, pozrite si svoj e-mail pre overovací kód."
+    
   }
