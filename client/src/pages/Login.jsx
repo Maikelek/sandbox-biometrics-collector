@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -21,7 +22,7 @@ import '../i18n';
 const Login = () => {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const [isFirstLogin, setIsFirstLogin] = useState(true);
+    const [isFirstLogin, setIsFirstLogin] = useState(false);
     const [mode, setMode] = useState(() => {
         return localStorage.getItem('themeMode') || 'light';
     });
@@ -59,22 +60,47 @@ const Login = () => {
         return newErrors;
     };
 
-    const handleSubmit = () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
 
-        console.log('Logging in:', formData);
-
-        if (formData.email !== 'test@example.com' || formData.password !== 'password123') {
-            setLoginError(t('invalid-credentials'));
+    const handleSubmit = async () => {
+      const validationErrors = validate();
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+    
+      try {
+        const res = await axios.post('http://localhost:1234/auth',
+          {
+            email: formData.email,
+            password: formData.password,
+            validation: isFirstLogin ? formData.validation : undefined
+          },
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+    
+        const data = res.data;
+    
+        if (res.status === 200) {
+          if (data.user.isValid === 0) {
+            setIsFirstLogin(true);
+          } else {
+            navigate('/');
+          }
         } else {
-            setLoginError('');
-            alert(t('login-success'));
+          setLoginError(data.message || t('server-error'));
         }
-    };
+      } catch (error) {
+        console.error('Login error:', error);
+        const msg = error.response?.data?.message || t('server-error');
+        setLoginError(msg);
+      }
+    };    
+    
 
     return (
     <ThemeProvider theme={theme}>
@@ -102,6 +128,7 @@ const Login = () => {
                 )}
 
                 <TextField
+                    disabled={isFirstLogin}
                     label={t('email')}
                     name="email"
                     fullWidth
@@ -112,6 +139,7 @@ const Login = () => {
                     helperText={errors.email}
                 />
                 <TextField
+                    disabled={isFirstLogin}
                     label={t('password')}
                     name="password"
                     type="password"
@@ -129,7 +157,7 @@ const Login = () => {
                     name="validation"
                     fullWidth
                     margin="normal"
-                    value={formData.password}
+                    value={formData.validation}
                     onChange={handleChange}
                     error={Boolean(errors.password)}
                     helperText={errors.password}

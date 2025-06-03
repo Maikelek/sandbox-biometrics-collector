@@ -36,6 +36,9 @@ app.get("/", (req, res) => {
 const registerRouter = require('./routes/registerRouter');
 app.use('/register', registerRouter);
 
+const authRouter = require('./routes/authRouter');
+app.use('/auth', authRouter);
+
 /* Application port*/ 
 app.listen(process.env.PORT, () => {      
     console.log("Backend is on port " + process.env.PORT);
