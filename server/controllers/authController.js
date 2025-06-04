@@ -85,14 +85,12 @@ const validateUser = async (req, res) => {
         );
     });
 };
- 
-
 
 const sessionExists = (req, res) => {
     if ( req.session.user) {
-        res.send({ auth: true, user: req.session.user});
+        res.send({ user: req.session.user});
     } else {
-        res.send({ auth: false, user:{role: null}});
+        res.send({ user: null});
     }
 };
 

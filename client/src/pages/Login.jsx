@@ -17,10 +17,12 @@ import {
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { createTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '../context/UserContext';
 import '../i18n';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { setUser } = useUser();
     const { t, i18n } = useTranslation();
     const [isFirstLogin, setIsFirstLogin] = useState(false);
     const [mode, setMode] = useState(() => {
@@ -90,6 +92,7 @@ const Login = () => {
             setIsFirstLogin(true);
           } else {
             navigate('/');
+            setUser(data.user);
           }
         } else {
           setLoginError(data.message || t('server-error'));
