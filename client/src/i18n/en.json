@@ -24,5 +24,11 @@
     "register-here": "Register here",
     "have-account": "Already have an account?",
     "login-here": "Login here",
-    "registered": "You have been successfully registered! Check your email for validation code."
+    "registered": "You have been successfully registered! Check your email for validation code.",
+
+    "language": "Choose language",
+    "toggle_theme": "Toggle color theme",
+    "open_settings": "Account settings",
+    "profile": "Profile",
+    "logout": "Log out"
   }
