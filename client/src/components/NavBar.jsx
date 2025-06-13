@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AppBar, Box, Toolbar, IconButton, Typography, Menu,
   MenuItem, CssBaseline, Container, Tooltip, Avatar
@@ -19,6 +20,7 @@ const NavBar = () => {
     const newMode = themeMode === 'light' ? 'dark' : 'light';
     setThemeMode(newMode);
     localStorage.setItem('themeMode', newMode);
+    window.location.reload();
   };
 
   const [langAnchor, setLangAnchor] = useState(null);
@@ -61,8 +63,8 @@ const NavBar = () => {
             <Typography
               variant="h6"
               noWrap
-              component="a"
-              href="/"
+              component={Link}
+              to="/"
               sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 'bold' }}
             >
               SBC 
@@ -102,7 +104,9 @@ const NavBar = () => {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 sx={{ mt: '40px' }}
               >
-                <MenuItem onClick={closeUserMenu}>{t('profile')}</MenuItem>
+                <MenuItem component={Link} to="/profile" onClick={closeUserMenu}>
+                  {t('profile')}
+                </MenuItem>
                 <MenuItem onClick={handleLogout}>{t('logout')}</MenuItem>
               </Menu>
             </Box>

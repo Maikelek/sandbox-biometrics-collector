@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
+import Profile from "./pages/Profile";
+
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 
@@ -21,6 +23,8 @@ function App() {
 
             <Route path="*" element={<Index />} />
             <Route path="/" element={<ProtectedRoute> {<Index />} </ProtectedRoute>} />
+
+            <Route path="/profile" element={<ProtectedRoute> {<Profile />} </ProtectedRoute>} />
 
             <Route path="/register" element={<PublicOnlyRoute> {<Register />} </PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />

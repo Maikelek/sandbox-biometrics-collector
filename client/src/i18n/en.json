@@ -1,7 +1,7 @@
 {
     "register": "Register",
     "name": "Name",
-    "email": "Email",
+    "email": "E-Mail",
     "password": "Password",
     "password-repeat": "Repeat Password",
     "submit": "Submit",
@@ -30,5 +30,17 @@
     "toggle_theme": "Toggle color theme",
     "open_settings": "Account settings",
     "profile": "Profile",
-    "logout": "Log out"
+    "logout": "Log out",
+
+    "role": "Role",
+    "admin": "Adminstrator",
+    "user": "User",
+    "registration-date": "Registration Date",
+    "consent-change-date": "Consent Change Date",
+    "biometric-consent": "Biometric Consent",
+    "yes": "Yes",
+    "no": "No",
+    "account-status": "Account Status",
+    "valid": "Valid",
+    "invalid": "Invalid"
   }

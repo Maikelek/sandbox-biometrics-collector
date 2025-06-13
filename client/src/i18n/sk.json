@@ -30,5 +30,17 @@
     "toggle_theme": "Zmena farbeného motívu",
     "open_settings": "Nastavenia účtu",
     "profile": "Profil",
-    "logout": "Odhlásiť sa"
+    "logout": "Odhlásiť sa",
+
+    "role": "Rola",
+    "admin": "Administrátor",
+    "user": "Užívateľ",
+    "registration-date": "Dátum registrácie",
+    "consent-change-date": "Dátum zmeny súhlasu",
+    "biometric-consent": "Súhlas s biometrickými údajmi",
+    "yes": "Áno",
+    "no": "Nie",
+    "account-status": "Stav účtu",
+    "valid": "Platný",
+    "invalid": "Neplatný"
   }

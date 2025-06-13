@@ -11,7 +11,7 @@ const LanguageToggle = () => {
   return (
     <ToggleButtonGroup value={i18n.language} exclusive onChange={changeLang} size="small">
       <ToggleButton value="en">EN</ToggleButton>
-      <ToggleButton value="de">DE</ToggleButton>
+      <ToggleButton value="sk">SK</ToggleButton>
     </ToggleButtonGroup>
   );
 };
