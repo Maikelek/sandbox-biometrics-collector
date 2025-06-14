@@ -1,17 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   Box,
   Card,
   Typography,
   Divider,
   Avatar,
-  CssBaseline,
-  ThemeProvider,
   Chip,
   Stack,
   useMediaQuery,
 } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { Verified, Cancel } from '@mui/icons-material';
 import NavBar from '../components/NavBar';
@@ -20,77 +17,69 @@ import { useUser } from "../context/UserContext";
 const Profile = () => {
   const { t } = useTranslation();
   const { user } = useUser();
-  const [mode] = useState(() => {
-    const saved = localStorage.getItem('themeMode');
-    return saved === 'dark' ? 'dark' : 'light';
-  });
-  const theme = useMemo(() => createTheme({ palette: { mode } }), [mode]);
   const isMobile = useMediaQuery('(max-width:600px)');
 
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+      }}
+    >
+      <NavBar />
       <Box
         sx={{
+          flex: 1,
+          overflow: 'hidden',
+          px: 2,
+          py: 4,
           display: 'flex',
           flexDirection: 'column',
-          height: '100vh',
+          alignItems: 'center',
         }}
       >
-        <NavBar />
-        <Box
+        <Card
           sx={{
+            width: '100%',
+            maxWidth: isMobile ? '100%' : 900,
+            borderRadius: 5,
+            boxShadow: 0,
+            p: { xs: 2, md: 4 },
             flex: 1,
-            overflow: 'hidden',
-            px: 2,
-            py: 4,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <Card
-            sx={{
-              width: '100%',
-              maxWidth: isMobile ? '100%' : 900,
-              borderRadius: 5,
-              boxShadow: 0,
-              p: { xs: 2, md: 4 },
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}
-          >
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center">
-              <Avatar sx={{ width: 120, height: 120, fontSize: 40 }}>
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </Avatar>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center">
+            <Avatar sx={{ width: 120, height: 120, fontSize: 40 }}>
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </Avatar>
 
-              <Box flex={1} textAlign={isMobile ? 'center' : 'left'}>
-                <Typography variant="h4" fontWeight={600}>{user?.name}</Typography>
-                <Typography variant="subtitle1" color="text.secondary">{user?.email}</Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>
-                  {t('role')}: <Chip label={user.user_role === 'admin' ? t('admin') : t('user')} color={user?.user_role === 'admin' ? 'primary' : 'default'} />
+            <Box flex={1} textAlign={isMobile ? 'center' : 'left'}>
+              <Typography variant="h4" fontWeight={600}>{user?.name}</Typography>
+              <Typography variant="subtitle1" color="text.secondary">{user?.email}</Typography>
+              <Typography variant="body1" sx={{ mt: 1 }}>
+                {t('role')}: <Chip label={user.user_role === 'admin' ? t('admin') : t('user')} color={user?.user_role === 'admin' ? 'primary' : 'default'} />
+              </Typography>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Stack spacing={1}>
+                <Typography variant="body1">
+                  {t('biometric-consent')}: <Chip icon={user.consent ? <Verified /> : <Cancel />} label={user.consent ? t('yes') : t('no')} color={user.consent ? 'success' : 'error'} variant="outlined" />
                 </Typography>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Stack spacing={1}>
-                  <Typography variant="body1">
-                    {t('biometric-consent')}: <Chip icon={user.consent ? <Verified /> : <Cancel />} label={user.consent ? t('yes') : t('no')} color={user.consent ? 'success' : 'error'} variant="outlined" />
-                  </Typography>
-                  <Typography variant="body1">
-                    {t('account-status')}: <Chip label={user.isValid ? t('valid') : t('invalid')} color={user.isValid ? 'success' : 'error'} variant="filled" />
-                  </Typography>
-                </Stack>
-              </Box>
-            </Stack>
-          </Card>
-        </Box>
+                <Typography variant="body1">
+                  {t('account-status')}: <Chip label={user.isValid ? t('valid') : t('invalid')} color={user.isValid ? 'success' : 'error'} variant="filled" />
+                </Typography>
+              </Stack>
+            </Box>
+          </Stack>
+        </Card>
       </Box>
-    </ThemeProvider>
+    </Box>
   );
 };
 
