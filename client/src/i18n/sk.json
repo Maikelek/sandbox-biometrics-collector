@@ -42,5 +42,10 @@
     "no": "Nie",
     "account-status": "Stav účtu",
     "valid": "Platný",
-    "invalid": "Neplatný"
+    "invalid": "Neplatný",
+
+    "index.title": "Vitajte v SBC",
+    "index.subtitle": "Váš IDE s biometrickou zbieraním dát, programovacími výzvami a ďalším!",
+    "index.button": "Začať",
+    "index.rights": " Marián Zelinka | Všetky práva vyhradené."
   }

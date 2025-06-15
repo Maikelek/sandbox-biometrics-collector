@@ -42,5 +42,10 @@
     "no": "No",
     "account-status": "Account Status",
     "valid": "Valid",
-    "invalid": "Invalid"
+    "invalid": "Invalid",
+
+    "index.title": "Welcome to SBC",
+    "index.subtitle": "Your IDE with biometric authentication, code challanges and more!",
+    "index.button": "Get Started",
+    "index.rights": " Marián Zelinka | All rights reserved."
   }

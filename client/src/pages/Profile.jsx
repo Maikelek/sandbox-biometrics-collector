@@ -8,6 +8,7 @@ import {
   Chip,
   Stack,
   useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Verified, Cancel } from '@mui/icons-material';
@@ -18,7 +19,7 @@ const Profile = () => {
   const { t } = useTranslation();
   const { user } = useUser();
   const isMobile = useMediaQuery('(max-width:600px)');
-
+  const theme = useTheme();
 
   return (
     <Box
@@ -26,6 +27,7 @@ const Profile = () => {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
+        backgroundColor: 'background.default',
       }}
     >
       <NavBar />
@@ -38,6 +40,7 @@ const Profile = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          backgroundColor: 'background.default',
         }}
       >
         <Card
@@ -51,6 +54,10 @@ const Profile = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
+            backgroundColor: 'background.default',
+            ...(theme.palette.mode === 'dark' && {
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }),
           }}
         >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center">
