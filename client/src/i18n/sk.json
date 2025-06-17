@@ -45,7 +45,22 @@
     "invalid": "Neplatný",
 
     "index.title": "Vitajte v SBC",
-    "index.subtitle": "Váš IDE s biometrickou zbieraním dát, programovacími výzvami a ďalším!",
+    "index.subtitle": "Vaše IDE s biometrickým zbieraním dát, programovacími výzvami a ďalším!",
     "index.button": "Začať",
-    "index.rights": " Marián Zelinka | Všetky práva vyhradené."
+    "index.rights": " Marián Zelinka | Všetky práva vyhradené.",
+
+    "problems.title": "Programovacie výzvy",
+    "problems.name": "Názov",
+    "problems.difficulty": "Obtiažnosť",
+    "problems.tags": "Tagy",
+    "problems.status": "Status",
+    "problems.status_solved": "Vyriešené",
+    "problems.status_unsolved": "Nevyriešené",
+    "problems.actions": "Možnosti",
+    "problems.solve": "Riešiť",
+    "problems.levels": {
+      "easy": "Ľahká",
+      "medium": "Stredná",
+      "hard": "Ťažká"
+    }
   }

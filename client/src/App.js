@@ -14,6 +14,7 @@ import ProtectedRoute from "./hooks/ProtectedRoute";
 import PublicOnlyRoute from "./hooks/PublicOnlyRoute";
 
 import './App.css';
+import Problems from "./pages/Problems";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/" element={<ProtectedRoute> {<Index />} </ProtectedRoute>} />
 
             <Route path="/profile" element={<ProtectedRoute> {<Profile />} </ProtectedRoute>} />
+            <Route path="/problems" element={<ProtectedRoute> {<Problems />} </ProtectedRoute>} />
 
             <Route path="/register" element={<PublicOnlyRoute> {<Register />} </PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />

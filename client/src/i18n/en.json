@@ -47,5 +47,20 @@
     "index.title": "Welcome to SBC",
     "index.subtitle": "Your IDE with biometric authentication, code challanges and more!",
     "index.button": "Get Started",
-    "index.rights": " Marián Zelinka | All rights reserved."
+    "index.rights": " Marián Zelinka | All rights reserved.",
+
+    "problems.title": "Coding challanges",
+    "problems.name": "Name",
+    "problems.difficulty": "Difficulty",
+    "problems.tags": "Tags",
+    "problems.status": "Status",
+    "problems.status_solved": "Solved",
+    "problems.status_unsolved": "Unsolved",
+    "problems.actions": "Actions",
+    "problems.solve": "Solve",
+    "problems.levels": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
   }

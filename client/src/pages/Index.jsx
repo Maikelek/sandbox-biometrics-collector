@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +48,8 @@ const Index = () => {
         <Button
           variant="contained"
           size="large"
-          href="/demo"
+          component={Link} 
+          to="/problems"
           sx={{
             backgroundColor: theme.palette.primary.main,
             px: 5,
