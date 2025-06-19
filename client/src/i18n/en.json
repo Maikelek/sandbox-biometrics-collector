@@ -62,5 +62,19 @@
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard"
-    }
+    },
+
+    "editor.writeYourCodeHere": "# Write your code here...",
+    "editor.error": "Error",
+    "editor.languageNotSupported": "Language not supported",
+    "editor.task": "Task",
+    "editor.input": "Input",
+    "editor.output": "Output",
+    "editor.examples": "Examples",
+    "editor.loadingTask": "Loading task...",
+    "editor.language": "Language",
+    "editor.runCode": "Run Code",
+    "editor.outputPlaceholder": "💬 Output will appear here...",
+    "editor.running": "Running code",
+    "editor.noOutput": "No output"
   }

@@ -5,6 +5,7 @@ import Profile from "./pages/Profile";
 
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import CodeEditor from "./pages/CodeEditor";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminRegister from "./pages/admin/AdminRegister";
@@ -27,6 +28,7 @@ function App() {
 
             <Route path="/profile" element={<ProtectedRoute> {<Profile />} </ProtectedRoute>} />
             <Route path="/problems" element={<ProtectedRoute> {<Problems />} </ProtectedRoute>} />
+            <Route path="/editor/:id" element={<ProtectedRoute> {<CodeEditor />} </ProtectedRoute>} />
 
             <Route path="/register" element={<PublicOnlyRoute> {<Register />} </PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />

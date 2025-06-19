@@ -64,7 +64,70 @@ const getUserProblems = (req, res) => {
     });
 };
 
+const getProblemWithExamples = (req, res) => {
+    const problemId = req.params.problemId;
+    const lang = req.query.lang;
+
+    const problemQuerySK = `
+      SELECT
+        problems.name AS name,
+        problems.difficulty,
+        problem_details.description,
+        problem_details.input,
+        problem_details.output
+      FROM problems
+      JOIN problem_details ON problem_details.id = problems.id
+      WHERE problems.id = ?;
+    `;
+
+    const problemQueryEN = `
+    SELECT
+      problems.name AS name,
+      problems.difficulty,
+      problem_details_en.description,
+      problem_details_en.input,
+      problem_details_en.output
+    FROM problems
+    JOIN problem_details_en ON problem_details_en.id = problems.id
+    WHERE problems.id = ?;
+  `;
+  
+    const examplesQuery = `
+      SELECT
+        example_input AS input,
+        example_output AS output
+      FROM problem_examples
+      WHERE problem_id = ?;
+    `;
+  
+    db.query(lang == "en" ? problemQueryEN : problemQuerySK, [problemId], (err, problemResult) => {
+      if (err) {
+        console.error("Error loading problem:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+  
+      if (problemResult.length === 0) {
+        return res.status(404).json({ message: "Problem not found" });
+      }
+  
+      db.query(examplesQuery, [problemId], (err, examplesResult) => {
+        if (err) {
+          console.error("Error loading examples:", err);
+          return res.status(500).json({ message: "Database error" });
+        }
+  
+        const fullResult = {
+          ...problemResult[0],
+          examples: examplesResult
+        };
+  
+        res.status(200).json(fullResult);
+      });
+    });
+  };
+
 
 module.exports = {
-    getUserProblems
+    getUserProblems,
+    getProblemWithExamples
 };

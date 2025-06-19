@@ -17,6 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import NavBar from '../components/NavBar';
 import { useUser } from "../context/UserContext";
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const difficultyColor = {
@@ -126,7 +127,11 @@ const Problems = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Button variant="contained" size="small">
+                        <Button variant="contained" 
+                                size="small"
+                                component={Link} 
+                                to={`/editor/${problem.id}`}
+                        >
                           {t('problems.solve')}
                         </Button>
                       </TableCell>

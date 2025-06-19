@@ -62,5 +62,19 @@
       "easy": "Ľahká",
       "medium": "Stredná",
       "hard": "Ťažká"
-    }
+    },
+
+    "editor.writeYourCodeHere": "# Píš svoj kód sem...",
+    "editor.error": "Chyba",
+    "editor.languageNotSupported": "Tento jazyk zatiaľ nepodporujeme.",
+    "editor.task": "Úloha",
+    "editor.input": "Vstup",
+    "editor.output": "Výstup",
+    "editor.examples": "Príklady",
+    "editor.loadingTask": "Načítavam úlohu...",
+    "editor.language": "Jazyk",
+    "editor.runCode": "Spustiť kód",
+    "editor.outputPlaceholder": "💬 Výstup sa zobrazí tu...",
+    "editor.running": "Prebieha spúšťanie kódu",
+    "editor.noOutput": "Žiadny výstup"
   }
