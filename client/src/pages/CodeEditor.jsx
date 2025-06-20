@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { useLocation } from 'react-router-dom';
+import { useUser } from "../context/UserContext";
 import {
   Box,
   Typography,
@@ -13,6 +14,11 @@ import {
   useTheme,
   Button,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import NavBar from '../components/NavBar';
 import { styled } from '@mui/system';
@@ -44,48 +50,68 @@ const RightPane = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#121212' : '#ffffff',
 }));
 
-const OutputBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f0f0f0',
-  color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-  fontFamily: 'monospace',
-  minHeight: '60px',
-  display: 'flex',
-  alignItems: 'center',
-  borderRadius: '12px',
-}));
-
 const languageMap = {
   python: 'Python',
+  java: 'Java',
+  c: 'C',
+};
+
+const getStarterCode = (language, problem) => {
+  switch (language) {
+    case 'python':
+      return problem.starter_code_py || '';
+    case 'java':
+      return problem.starter_code_java || '';
+    case 'c':
+      return problem.starter_code_c || '';
+    default:
+      return '';
+  }
 };
 
 const CodeEditor = () => {
+  const { user } = useUser();
   const { t, i18n } = useTranslation();
-
   const location = useLocation();
   const problemId = location.pathname.split('/')[2];
-
+  
   const [problem, setProblem] = useState(null);
   const [code, setCode] = useState(t('editor.writeYourCodeHere'));
   const [language, setLanguage] = useState('python');
   const [output, setOutput] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
   const isRunning = output === t('editor.running') + '...';
   const theme = useTheme();
 
   const handleRunCode = async () => {
     try {
       setOutput(t('editor.running') + '...');
-  
+      setDialogOpen(true);
+      console.log(user.id, problem.id)
       const response = await axios.post('http://localhost:1234/code', {
         code,
         language,
+        problem: problem?.problem || '',
+        userId: user?.id || null,
+        problemId: problem?.id || null,
       });
-  
-      setOutput(response.data.output || t('editor.noOutput'));
+
+      if (response.data.results?.length > 0) {
+        const formattedResults = response.data.results.map((r, idx) =>
+        `#${idx + 1} ${t('editor.input')}: ${r.input}\n${t('editor.expected')}: ${r.expected}\n${t('editor.output')}: ${r.output}\n${t('editor.result')}: ${r.passed ? '✅' : '❌'}\n`)
+        .join('\n');
+        setOutput(formattedResults);
+      } else {
+        setOutput(t('editor.noOutput'));
+      }
     } catch (err) {
       console.error('Error running code:', err);
       setOutput(`${t('error')}: ${err.response?.data?.error || err.message}`);
     }
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
 
   useEffect(() => {
@@ -96,13 +122,14 @@ const CodeEditor = () => {
         },
       })
       .then((res) => {
+        console.log(res)
         setProblem(res.data);
-        setCode(t('editor.writeYourCodeHere'));
+        setCode(getStarterCode(language, res.data));
       })
       .catch((err) => {
         console.error('Error loading problem:', err);
       });
-  }, [problemId, i18n.language, t]);
+  }, [problemId, i18n.language, language]);
 
   return (
     <>
@@ -140,19 +167,20 @@ const CodeEditor = () => {
         </LeftPane>
 
         <RightPane>
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-            justifyContent="space-between"
-          >
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
             <FormControl size="small">
               <InputLabel id="language-select-label">{t('editor.language')}</InputLabel>
               <Select
                 labelId="language-select-label"
                 value={language}
                 label={t('editor.language')}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={(e) => {
+                  const newLang = e.target.value;
+                  setLanguage(newLang);
+                  if (problem) {
+                    setCode(getStarterCode(newLang, problem));
+                  }
+                }}
                 sx={{ minWidth: 150 }}
               >
                 {Object.entries(languageMap).map(([key, label]) => (
@@ -174,19 +202,13 @@ const CodeEditor = () => {
             </Button>
           </Stack>
 
-          <OutputBox elevation={1}>
-            <Typography variant="body2">
-              {output || t('editor.outputPlaceholder')}
-            </Typography>
-          </OutputBox>
-
           <Box sx={{ flex: 1, borderRadius: '12px', overflow: 'hidden' }}>
             <Editor
               height="100%"
               language={language}
               value={code}
               theme={theme.palette.mode === 'dark' ? 'vs-dark' : 'light'}
-              onChange={(value) => setCode(value)}
+              onChange={(value) => setCode(value || '')}
               options={{
                 fontSize: 14,
                 minimap: { enabled: false },
@@ -196,6 +218,20 @@ const CodeEditor = () => {
           </Box>
         </RightPane>
       </Container>
+
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>{t('editor.output')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText component="div" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+            {output}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

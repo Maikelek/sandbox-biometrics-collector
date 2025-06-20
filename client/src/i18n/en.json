@@ -76,5 +76,7 @@
     "editor.runCode": "Run Code",
     "editor.outputPlaceholder": "💬 Output will appear here...",
     "editor.running": "Running code",
-    "editor.noOutput": "No output"
+    "editor.noOutput": "No output",
+    "editor.expected": "Expected output",
+    "editor.result": "Result"
   }

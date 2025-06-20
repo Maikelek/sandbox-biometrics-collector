@@ -76,5 +76,7 @@
     "editor.runCode": "Spustiť kód",
     "editor.outputPlaceholder": "💬 Výstup sa zobrazí tu...",
     "editor.running": "Prebieha spúšťanie kódu",
-    "editor.noOutput": "Žiadny výstup"
+    "editor.noOutput": "Žiadny výstup",
+    "editor.expected": "Očakávaný výstup",
+    "editor.result": "Výsledok"
   }

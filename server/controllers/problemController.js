@@ -65,66 +65,78 @@ const getUserProblems = (req, res) => {
 };
 
 const getProblemWithExamples = (req, res) => {
-    const problemId = req.params.problemId;
-    const lang = req.query.lang;
+  const problemId = req.params.problemId;
+  const lang = req.query.lang;
 
-    const problemQuerySK = `
-      SELECT
-        problems.name AS name,
-        problems.difficulty,
-        problem_details.description,
-        problem_details.input,
-        problem_details.output
-      FROM problems
-      JOIN problem_details ON problem_details.id = problems.id
-      WHERE problems.id = ?;
-    `;
-
-    const problemQueryEN = `
+  const problemQuerySK = `
     SELECT
+      problems.id,
       problems.name AS name,
       problems.difficulty,
-      problem_details_en.description,
-      problem_details_en.input,
-      problem_details_en.output
+      problems.problem,
+      problem_details.description,
+      problem_details.input,
+      problem_details.output,
+      starter_code.starter_code_py,
+      starter_code.starter_code_java,
+      starter_code.starter_code_c
     FROM problems
-    JOIN problem_details_en ON problem_details_en.id = problems.id
+    JOIN problem_details ON problem_details.id = problems.id
+    LEFT JOIN problem_starter_code AS starter_code ON starter_code.problem_id = problems.id
     WHERE problems.id = ?;
   `;
-  
-    const examplesQuery = `
-      SELECT
-        example_input AS input,
-        example_output AS output
-      FROM problem_examples
-      WHERE problem_id = ?;
-    `;
-  
-    db.query(lang == "en" ? problemQueryEN : problemQuerySK, [problemId], (err, problemResult) => {
+
+  const problemQueryEN = `
+    SELECT
+      problems.id,
+      problems.name AS name,
+      problems.difficulty,
+      problems.problem,
+      problem_details_en.description,
+      problem_details_en.input,
+      problem_details_en.output,
+      starter_code.starter_code_py,
+      starter_code.starter_code_java,
+      starter_code.starter_code_c
+    FROM problems
+    JOIN problem_details_en ON problem_details_en.id = problems.id
+    LEFT JOIN problem_starter_code AS starter_code ON starter_code.problem_id = problems.id
+    WHERE problems.id = ?;
+  `;
+
+  const examplesQuery = `
+    SELECT
+      example_input AS input,
+      example_output AS output
+    FROM problem_examples
+    WHERE problem_id = ?;
+  `;
+
+  db.query(lang === "en" ? problemQueryEN : problemQuerySK, [problemId], (err, problemResult) => {
+    if (err) {
+      console.error("Error loading problem:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    if (problemResult.length === 0) {
+      return res.status(404).json({ message: "Problem not found" });
+    }
+
+    db.query(examplesQuery, [problemId], (err, examplesResult) => {
       if (err) {
-        console.error("Error loading problem:", err);
+        console.error("Error loading examples:", err);
         return res.status(500).json({ message: "Database error" });
       }
-  
-      if (problemResult.length === 0) {
-        return res.status(404).json({ message: "Problem not found" });
-      }
-  
-      db.query(examplesQuery, [problemId], (err, examplesResult) => {
-        if (err) {
-          console.error("Error loading examples:", err);
-          return res.status(500).json({ message: "Database error" });
-        }
-  
-        const fullResult = {
-          ...problemResult[0],
-          examples: examplesResult
-        };
-  
-        res.status(200).json(fullResult);
-      });
+
+      const fullResult = {
+        ...problemResult[0],
+        examples: examplesResult
+      };
+
+      res.status(200).json(fullResult);
     });
-  };
+  });
+};
 
 
 module.exports = {

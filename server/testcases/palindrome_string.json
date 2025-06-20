@@ -1,0 +1,10 @@
+{
+    "name": "palindrome_string",
+    "tests": [
+      { "input": "radar", "expected": "True" },
+      { "input": "TUKE", "expected": "False" },
+      { "input": "level", "expected": "True" },
+      { "input": "madam", "expected": "True" }
+    ]
+  }
+  
