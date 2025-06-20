@@ -1,17 +1,14 @@
 const fs = require('fs');
-const db = require('../db')
+const db = require('../db');
 const path = require('path');
-const { exec } = require('child_process');
 const util = require('util');
-const execAsync = util.promisify(exec);
+const execAsync = util.promisify(require('child_process').exec);
 
 const TEMP_DIR = path.join(__dirname, '..', 'temp');
 const TESTCASE_DIR = path.join(__dirname, '..', 'testcases');
 
 const runCode = async (req, res) => {
   const { code, language, problem, problemId, userId } = req.body;
-  const id = Date.now();
-  let extension, dockerfile, imageName, filename;
 
   try {
     if (language !== 'python') {
@@ -27,20 +24,15 @@ const runCode = async (req, res) => {
       return res.status(404).json({ error: `Testcases for problem '${problem}' not found.` });
     }
 
-    extension = 'py';
-    dockerfile = 'Dockerfile.py';
-    imageName = 'py-runner';
-    filename = `temp-${id}.${extension}`;
-    const filepath = path.join(TEMP_DIR, filename);
-    const containerFile = `temp.${extension}`;
-    const containerPath = path.join(TEMP_DIR, containerFile);
-
     const testData = JSON.parse(fs.readFileSync(testcaseFile));
     const tests = testData.tests;
 
-    let results = [];
+    const results = [];
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const filename = `temp-${uniqueId}.py`;
+    const filepath = path.join(TEMP_DIR, filename);
 
-    for (let test of tests) {
+    for (const test of tests) {
       const input = test.input;
       const expected = String(test.expected).trim();
 
@@ -52,19 +44,14 @@ const runCode = async (req, res) => {
 ${code}
 
 print(${problem}(${callArgs}))
-`;
+      `;
 
       fs.writeFileSync(filepath, codeWithInput);
-      fs.copyFileSync(filepath, containerPath);
 
-      await execAsync(`docker build -f ${dockerfile} -t ${imageName} .`, {
-        cwd: path.join(__dirname, '..'),
-      });
-
-      const { stdout, stderr } = await execAsync(`docker run --rm ${imageName}`, {
-        cwd: path.join(__dirname, '..'),
-        timeout: 10000,
-      });
+      const { stdout, stderr } = await execAsync(
+        `docker run --rm -v ${TEMP_DIR}:/app py-runner python3 /app/${filename}`,
+        { timeout: 10000 }
+      );
 
       const output = (stderr || stdout).trim();
 
@@ -74,13 +61,13 @@ print(${problem}(${callArgs}))
         output,
         passed: output === expected,
       });
+    }
 
+    if (fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
-      fs.unlinkSync(containerPath);
     }
 
     const passedAll = results.every(r => r.passed);
-
 
     if (passedAll && userId && problemId) {
       try {
@@ -104,6 +91,4 @@ print(${problem}(${callArgs}))
   }
 };
 
-module.exports = { 
-  runCode
- };
+module.exports = { runCode };

@@ -1,4 +1,3 @@
-FROM python:3.11
+FROM python:3.11-slim
 WORKDIR /app
-COPY temp/temp.py .
-CMD ["python3", "temp.py"]
+CMD ["python3"]
