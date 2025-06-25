@@ -35,6 +35,7 @@ const validateUser = async (req, res) => {
             email: userRecord.user_email,
             consent: userRecord.user_consent,
             isValid: userRecord.user_isValid,
+            isAdmin: userRecord.user_isAdmin,
         };
 
         if (!validation) {

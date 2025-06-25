@@ -30,7 +30,9 @@
     "toggle_theme": "Toggle color theme",
     "open_settings": "Account settings",
     "profile": "Profile",
+    "users": "Users",
     "logout": "Log out",
+    "problems": "Challenges",
 
     "role": "Role",
     "admin": "Adminstrator",
@@ -45,11 +47,11 @@
     "invalid": "Invalid",
 
     "index.title": "Welcome to SBC",
-    "index.subtitle": "Your IDE with biometric authentication, code challanges and more!",
+    "index.subtitle": "Your IDE with biometric data collecion, code challenges and more!",
     "index.button": "Get Started",
     "index.rights": " Marián Zelinka | All rights reserved.",
 
-    "problems.title": "Coding challanges",
+    "problems.title": "Coding challenges",
     "problems.name": "Name",
     "problems.difficulty": "Difficulty",
     "problems.tags": "Tags",
@@ -78,5 +80,12 @@
     "editor.running": "Running code",
     "editor.noOutput": "No output",
     "editor.expected": "Expected output",
-    "editor.result": "Result"
+    "editor.result": "Result",
+
+    "admin.users.title": "User Management",
+    "admin.users.name": "Name",
+    "admin.users.edit": "Edit",
+    "admin.users.delete": "Delete",
+
+    "admin.problems.title": "Problem Management"
   }

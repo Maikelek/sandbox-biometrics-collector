@@ -30,7 +30,9 @@
     "toggle_theme": "Zmena farbeného motívu",
     "open_settings": "Nastavenia účtu",
     "profile": "Profil",
+    "users": "Užívatelia",
     "logout": "Odhlásiť sa",
+    "problems": "Výzvy",
 
     "role": "Rola",
     "admin": "Administrátor",
@@ -78,5 +80,12 @@
     "editor.running": "Prebieha spúšťanie kódu",
     "editor.noOutput": "Žiadny výstup",
     "editor.expected": "Očakávaný výstup",
-    "editor.result": "Výsledok"
+    "editor.result": "Výsledok",
+
+    "admin.users.title": "Správa užívateľov",
+    "admin.users.name": "Meno",
+    "admin.users.edit": "Upraviť",
+    "admin.users.delete": "Zmazať",
+
+    "admin.problems.title": "Správa problémov"
   }

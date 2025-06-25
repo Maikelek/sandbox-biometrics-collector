@@ -7,8 +7,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import CodeEditor from "./pages/CodeEditor";
 
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminRegister from "./pages/admin/AdminRegister";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminProblems from "./pages/admin/AdminProblems";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import ProtectedRoute from "./hooks/ProtectedRoute";
@@ -33,9 +33,9 @@ function App() {
             <Route path="/register" element={<PublicOnlyRoute> {<Register />} </PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />
 
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin-register" element={<AdminRegister />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/problems" element={<AdminProblems />} />
+            <Route path="/admin" element={<AdminDashboard />} />
 
 
             

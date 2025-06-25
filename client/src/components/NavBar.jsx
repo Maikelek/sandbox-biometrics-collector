@@ -97,6 +97,15 @@ const NavBar = () => {
               <MenuItem component={Link} to="/profile" onClick={closeUserMenu}>
                 {t('profile')}
               </MenuItem>
+              
+              {user?.isAdmin === 1 && <MenuItem component={Link} to="/admin" onClick={closeUserMenu}>
+                {t('admin')}
+              </MenuItem> }
+
+              <MenuItem component={Link} to="/problems" onClick={closeUserMenu}>
+                {t('problems')}
+              </MenuItem>
+
               <MenuItem onClick={handleLogout}>{t('logout')}</MenuItem>
             </Menu>
           </Box>

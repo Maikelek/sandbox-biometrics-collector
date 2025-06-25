@@ -69,7 +69,7 @@ const Profile = () => {
               <Typography variant="h4" fontWeight={600}>{user?.name}</Typography>
               <Typography variant="subtitle1" color="text.secondary">{user?.email}</Typography>
               <Typography variant="body1" sx={{ mt: 1 }}>
-                {t('role')}: <Chip label={user.user_role === 'admin' ? t('admin') : t('user')} color={user?.user_role === 'admin' ? 'primary' : 'default'} />
+                {t('role')}: <Chip label={user.isAdmin === 1 ? t('admin') : t('user')} color={user.isAdmin === 1 ? 'primary' : 'default'} />
               </Typography>
 
               <Divider sx={{ my: 2 }} />
