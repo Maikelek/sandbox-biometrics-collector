@@ -42,6 +42,7 @@
     "biometric-consent": "Súhlas s biometrickými údajmi",
     "yes": "Áno",
     "no": "Nie",
+    "delete": "Zmazať",
     "account-status": "Stav účtu",
     "valid": "Platný",
     "invalid": "Neplatný",
@@ -82,10 +83,17 @@
     "editor.expected": "Očakávaný výstup",
     "editor.result": "Výsledok",
 
+    "admin.problems.confirmDeleteTitle": "Potvrdenie zmazania",
+    "admin.problems.confirmDeleteMessage": "Naozaj chcete zmazať problém '{{name}}'?",
+    "admin.problems.deletedSuccess": "Problém bol úspešne zmazaný.",
+
     "admin.users.title": "Správa užívateľov",
     "admin.users.name": "Meno",
     "admin.users.edit": "Upraviť",
     "admin.users.delete": "Zmazať",
+    "admin.users.confirmDeleteMessage": "Naozaj chcete zmazať používateľa {{name}}?",
+    "admin.users.deletedSuccess": "Používateľ bol úspešne zmazaný.",
+    "admin.users.confirmDeleteTitle": "Potvrdenie zmazania",
 
     "admin.problems.title": "Správa problémov"
   }

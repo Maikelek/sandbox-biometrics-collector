@@ -42,6 +42,7 @@
     "biometric-consent": "Biometric Consent",
     "yes": "Yes",
     "no": "No",
+    "delete": "Delete",
     "account-status": "Account Status",
     "valid": "Valid",
     "invalid": "Invalid",
@@ -82,10 +83,17 @@
     "editor.expected": "Expected output",
     "editor.result": "Result",
 
+    "admin.problems.confirmDeleteTitle": "Confirm deletion",
+    "admin.problems.confirmDeleteMessage": "Are you sure you want to delete problem '{{name}}'?",
+    "admin.problems.deletedSuccess": "Problem was successfully deleted.",
+
     "admin.users.title": "User Management",
     "admin.users.name": "Name",
     "admin.users.edit": "Edit",
     "admin.users.delete": "Delete",
+    "admin.users.confirmDeleteMessage": "Are you sure you want to delete user {{name}}?",
+    "admin.users.deletedSuccess": "User has been successfully deleted.",
+    "admin.users.confirmDeleteTitle": "Delete confirmation",
 
     "admin.problems.title": "Problem Management"
   }

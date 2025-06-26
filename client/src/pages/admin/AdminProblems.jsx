@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -8,44 +8,92 @@ import {
   TableCell,
   TableBody,
   Chip,
-  Button,
+  IconButton,
   Paper,
+  CircularProgress,
   Pagination,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  Button,
 } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
 
-const fakeProblems = [
-  { id: 1, title: 'Two Sum', difficulty: 'easy', status: 'active' },
-  { id: 2, title: 'Reverse Linked List', difficulty: 'medium', status: 'active' },
-  { id: 3, title: 'Merge Intervals', difficulty: 'hard', status: 'inactive' },
-  { id: 4, title: 'Binary Search', difficulty: 'easy', status: 'active' },
-  { id: 5, title: 'Clone Graph', difficulty: 'hard', status: 'active' },
-  { id: 6, title: 'Valid Parentheses', difficulty: 'easy', status: 'inactive' },
-  { id: 7, title: 'Longest Substring', difficulty: 'medium', status: 'active' },
-  { id: 8, title: 'Graph Valid Tree', difficulty: 'medium', status: 'active' },
-];
+const difficultyColor = {
+  easy: 'success',
+  medium: 'warning',
+  hard: 'error',
+};
 
 const AdminProblems = () => {
   const { t } = useTranslation();
-
+  const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const limit = 8;
-  const totalPages = Math.ceil(fakeProblems.length / limit);
+
+  const fetchProblems = useCallback(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:1234/admin/problems?page=${page}`)
+      .then((res) => {
+        const { problems, total } = res.data;
+        const enhanced = problems.map((p) => ({
+          ...p,
+          tags: p.tags ? p.tags.split(',').map((tag) => tag.trim()) : [],
+        }));
+        setProblems(enhanced);
+        setTotalPages(Math.ceil((total || 0) / limit));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching problems:', err);
+        setLoading(false);
+      });
+  }, [page]);
+
+  useEffect(() => {
+    fetchProblems();
+  }, [fetchProblems]);
 
   const handlePageChange = (event, value) => {
     setPage(value);
   };
 
-  const problemsToShow = fakeProblems.slice((page - 1) * limit, page * limit);
-
   const handleEdit = (problemId) => {
     alert(`Edit problem ${problemId}`);
   };
 
-  const handleDelete = (problemId) => {
-    alert(`Delete problem ${problemId}`);
+  const handleDelete = (problem) => {
+    setSelectedProblem(problem);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    axios
+      .delete(`http://localhost:1234/admin/problems`, {
+        data: { id: selectedProblem.id },
+      })
+      .then(() => {
+        setSnackbarOpen(true);
+        setDeleteDialogOpen(false);
+        fetchProblems();
+      })
+      .catch((err) => {
+        console.error('Error deleting problem:', err);
+        setDeleteDialogOpen(false);
+      });
   };
 
   return (
@@ -63,67 +111,109 @@ const AdminProblems = () => {
           {t('admin.problems.title')}
         </Typography>
 
-        <Paper elevation={3} sx={{ overflowX: 'auto' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>#</TableCell>
-                <TableCell>{t('problems.name')}</TableCell>
-                <TableCell>{t('problems.difficulty')}</TableCell>
-                <TableCell align="right">{t('problems.actions')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {problemsToShow.map((problem) => (
-                <TableRow key={problem.id}>
-                  <TableCell>{problem.id}</TableCell>
-                  <TableCell>{problem.title}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={t(`problems.levels.${problem.difficulty}`)}
-                      color={
-                        problem.difficulty === 'easy'
-                          ? 'success'
-                          : problem.difficulty === 'medium'
-                          ? 'warning'
-                          : 'error'
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      sx={{ mr: 1 }}
-                      onClick={() => handleEdit(problem.id)}
-                    >
-                      {t('admin.users.edit')}
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(problem.id)}
-                    >
-                      {t('admin.users.delete')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Paper>
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <>
+            <Paper elevation={3} sx={{ overflowX: 'auto' }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>{t('problems.name')}</TableCell>
+                    <TableCell>{t('problems.difficulty')}</TableCell>
+                    <TableCell>{t('problems.tags')}</TableCell>
+                    <TableCell align="right">{t('problems.actions')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {problems.map((problem) => (
+                    <TableRow key={problem.id}>
+                      <TableCell>{problem.id}</TableCell>
+                      <TableCell>{problem.name}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={t(`problems.levels.${problem.difficulty.toLowerCase()}`)}
+                          color={difficultyColor[problem.difficulty.toLowerCase()] || 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {problem.tags.map((tag, index) => (
+                          <Chip
+                            key={index}
+                            label={tag}
+                            variant="outlined"
+                            size="small"
+                            sx={{ mr: 0.5, mb: 0.5 }}
+                          />
+                        ))}
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          aria-label="edit"
+                          color="primary"
+                          onClick={() => handleEdit(problem.id)}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          aria-label="delete"
+                          color="error"
+                          onClick={() => handleDelete(problem)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
 
-        <Stack spacing={2} sx={{ mt: 4 }} alignItems="center">
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            showFirstButton
-            showLastButton
-          />
-        </Stack>
+            <Stack spacing={2} sx={{ mt: 4 }} alignItems="center">
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+              />
+            </Stack>
+          </>
+        )}
+
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+          <DialogTitle>{t('admin.problems.confirmDeleteTitle')}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {t('admin.problems.confirmDeleteMessage', {
+                name: selectedProblem?.name,
+              })}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>{t('cancel')}</Button>
+            <Button onClick={confirmDelete} color="error" variant="contained">
+              {t('delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="success"
+            sx={{ width: '100%' }}
+          >
+            {t('admin.problems.deletedSuccess')}
+          </Alert>
+        </Snackbar>
       </Box>
     </>
   );

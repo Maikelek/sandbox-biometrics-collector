@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -8,12 +8,19 @@ import {
   TableCell,
   TableBody,
   Chip,
-  Button,
+  IconButton,
   Paper,
   CircularProgress,
   Pagination,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
 } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
@@ -24,20 +31,21 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const limit = 8;
 
-  useEffect(() => {
+  const fetchUsers = useCallback(() => {
     setLoading(true);
     axios
       .get(`http://localhost:1234/admin/users?page=${page}`)
       .then((res) => {
         const { users, total } = res.data;
-
         const mappedUsers = users.map((user) => ({
           ...user,
           role: user.isAdmin ? 'admin' : 'user',
         }));
-
         setUsers(mappedUsers);
         setTotalPages(Math.ceil(total / limit));
         setLoading(false);
@@ -48,6 +56,10 @@ const AdminUsers = () => {
       });
   }, [page]);
 
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
   const handlePageChange = (event, value) => {
     setPage(value);
   };
@@ -56,8 +68,25 @@ const AdminUsers = () => {
     alert(`Edit user ${userId}`);
   };
 
-  const handleDelete = (userId) => {
-    alert(`Delete user ${userId}`);
+  const handleDelete = (user) => {
+    setSelectedUser(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    axios
+      .delete(`http://localhost:1234/admin/users`, {
+        data: { id: selectedUser.id },
+      })
+      .then(() => {
+        setSnackbarOpen(true);
+        setDeleteDialogOpen(false);
+        fetchUsers();
+      })
+      .catch((err) => {
+        console.error('Error deleting user:', err);
+        setDeleteDialogOpen(false);
+      });
   };
 
   return (
@@ -101,22 +130,20 @@ const AdminUsers = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          sx={{ mr: 1 }}
+                        <IconButton
+                          aria-label="edit"
+                          color="primary"
                           onClick={() => handleEdit(user.id)}
                         >
-                          {t('admin.users.edit')}
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          aria-label="delete"
                           color="error"
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDelete(user)}
                         >
-                          {t('admin.users.delete')}
-                        </Button>
+                          <Delete />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -136,6 +163,43 @@ const AdminUsers = () => {
             </Stack>
           </>
         )}
+
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>{t('admin.users.confirmDeleteTitle')}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {t('admin.users.confirmDeleteMessage', {
+                name: selectedUser?.name,
+              })}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <IconButton onClick={() => setDeleteDialogOpen(false)}>
+              {t('cancel')}
+            </IconButton>
+            <IconButton onClick={confirmDelete} color="error">
+              {t('delete')}
+            </IconButton>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="success"
+            sx={{ width: '100%' }}
+          >
+            {t('admin.users.deletedSuccess')}
+          </Alert>
+        </Snackbar>
       </Box>
     </>
   );
