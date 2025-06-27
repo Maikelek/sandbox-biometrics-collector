@@ -23,10 +23,12 @@ import {
 import { Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
 
 const AdminUsers = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -65,7 +67,7 @@ const AdminUsers = () => {
   };
 
   const handleEdit = (userId) => {
-    alert(`Edit user ${userId}`);
+    navigate(`/admin/user/${userId}`);
   };
 
   const handleDelete = (user) => {

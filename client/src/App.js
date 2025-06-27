@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import CodeEditor from "./pages/CodeEditor";
 
+import AdminUserEdit from "./pages/admin/AdminUserEdit";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProblems from "./pages/admin/AdminProblems";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -34,6 +35,8 @@ function App() {
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />
 
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/user/:id" element={<AdminUserEdit />} />
+
             <Route path="/admin/problems" element={<AdminProblems />} />
             <Route path="/admin" element={<AdminDashboard />} />
 

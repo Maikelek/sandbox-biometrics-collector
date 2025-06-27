@@ -95,5 +95,17 @@
     "admin.users.deletedSuccess": "Používateľ bol úspešne zmazaný.",
     "admin.users.confirmDeleteTitle": "Potvrdenie zmazania",
 
+    "admin.users.editTitle": "Upraviť používateľa",
+    "admin.users.email": "Email",
+    "admin.users.isAdmin": "Je administrátor",
+    "admin.users.isValid": "Overený účet",
+    "admin.users.consent": "Súhlas so spracovaním",
+    "admin.users.newPassword": "Nové heslo",
+    "admin.users.leaveBlankToKeep": "Nechaj prázdne, ak nechceš meniť heslo",
+    "admin.users.registrationDate": "Dátum registrácie",
+    "admin.users.consentChangeDate": "Zmena súhlasu",
+    "admin.users.updateSuccess": "Používateľ bol úspešne aktualizovaný",
+
     "admin.problems.title": "Správa problémov"
+
   }

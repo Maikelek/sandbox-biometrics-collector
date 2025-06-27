@@ -47,7 +47,6 @@ const Login = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = t('error-email');
-    if (formData.password.length < 6) newErrors.password = t('error-password');
     return newErrors;
   };
 
