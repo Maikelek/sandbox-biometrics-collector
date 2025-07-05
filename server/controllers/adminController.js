@@ -220,6 +220,225 @@ const getAllProblems = (req, res) => {
   });
 };
 
+const getProblemById = (req, res) => {
+  const problemId = req.params.id;
+
+  if (!problemId) {
+    return res.status(400).json({ message: "Missing problem ID" });
+  }
+
+  const problemQuery = `
+    SELECT
+      problems.id,
+      problems.name,
+      problems.problem AS function_name,
+      problems.difficulty,
+      problem_details.description AS description_slovak,
+      problem_details.input AS input_slovak,
+      problem_details.output AS output_slovak,
+      problem_details_en.description AS description_english,
+      problem_details_en.input AS input_english,
+      problem_details_en.output AS output_english,
+      problem_examples.example_input,
+      problem_examples.example_output,
+      problem_starter_code.starter_code_py,
+      problem_starter_code.starter_code_java,
+      problem_starter_code.starter_code_c,
+      GROUP_CONCAT(tags.name SEPARATOR ', ') AS problem_tags
+    FROM problems
+    LEFT JOIN problem_details ON problems.id = problem_details.id
+    LEFT JOIN problem_details_en ON problems.id = problem_details_en.id
+    LEFT JOIN problem_examples ON problems.id = problem_examples.problem_id
+    LEFT JOIN problem_starter_code ON problems.id = problem_starter_code.problem_id
+    LEFT JOIN problem_tags ON problems.id = problem_tags.problem_id
+    LEFT JOIN tags ON problem_tags.tag_id = tags.id
+    WHERE problems.id = ?
+    GROUP BY problems.id, problem_examples.id;
+  `;
+
+  const allTagsQuery = `SELECT id, name FROM tags`;
+  const problemTagsQuery = `
+    SELECT tags.name
+    FROM problem_tags
+    JOIN tags ON tags.id = problem_tags.tag_id
+    WHERE problem_tags.problem_id = ?
+  `;
+
+  db.query(problemQuery, [problemId], (err, problemResult) => {
+    if (err) {
+      console.error("Error fetching problem:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    if (problemResult.length === 0) {
+      return res.status(404).json({ message: "Problem not found" });
+    }
+
+    const problem = problemResult[0];
+
+    db.query(allTagsQuery, (err, allTags) => {
+      if (err) {
+        console.error("Error fetching all tags:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      db.query(problemTagsQuery, [problemId], (err, problemTags) => {
+        if (err) {
+          console.error("Error fetching problem tags:", err);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        res.status(200).json({
+          problem,
+          allTags,
+          selectedTags: problemTags.map(t => t.name),
+        });
+      });
+    });
+  });
+};
+
+const updateProblem = (req, res) => {
+  const problemId = req.params.id;
+  const {
+    name,
+    difficulty,
+    description_slovak,
+    input_slovak,
+    output_slovak,
+    description_english,
+    input_english,
+    output_english,
+    example_input,
+    example_output,
+    starter_code_py,
+    starter_code_java,
+    starter_code_c,
+    problem_tags,
+  } = req.body;
+
+  if (!problemId) {
+    return res.status(400).json({ message: "Missing problem ID" });
+  }
+
+  const updateProblemQuery = `
+    UPDATE problems
+    SET name = ?, difficulty = ?
+    WHERE id = ?
+  `;
+
+  const updateDetailsSkQuery = `
+    UPDATE problem_details
+    SET description = ?, input = ?, output = ?
+    WHERE id = ?
+  `;
+
+  const updateDetailsEnQuery = `
+    UPDATE problem_details_en
+    SET description = ?, input = ?, output = ?
+    WHERE id = ?
+  `;
+
+  const updateExamplesQuery = `
+    UPDATE problem_examples
+    SET example_input = ?, example_output = ?
+    WHERE problem_id = ?
+  `;
+
+  const updateStarterCodeQuery = `
+    UPDATE problem_starter_code
+    SET starter_code_py = ?, starter_code_java = ?, starter_code_c = ?
+    WHERE problem_id = ?
+  `;
+
+  db.query(updateProblemQuery, [name, difficulty, problemId], (err) => {
+    if (err) {
+      console.error('Error updating problems:', err);
+      return res.status(500).json({ message: 'Database error updating problems' });
+    }
+
+    db.query(updateDetailsSkQuery, [description_slovak, input_slovak, output_slovak, problemId], (err) => {
+      if (err) {
+        console.error('Error updating problem_details:', err);
+        return res.status(500).json({ message: 'Database error updating problem_details' });
+      }
+
+      db.query(updateDetailsEnQuery, [description_english, input_english, output_english, problemId], (err) => {
+        if (err) {
+          console.error('Error updating problem_details_en:', err);
+          return res.status(500).json({ message: 'Database error updating problem_details_en' });
+        }
+
+        db.query(updateExamplesQuery, [example_input, example_output, problemId], (err) => {
+          if (err) {
+            console.error('Error updating problem_examples:', err);
+            return res.status(500).json({ message: 'Database error updating problem_examples' });
+          }
+
+          db.query(updateStarterCodeQuery, [starter_code_py, starter_code_java, starter_code_c, problemId], (err) => {
+            if (err) {
+              console.error('Error updating problem_starter_code:', err);
+              return res.status(500).json({ message: 'Database error updating problem_starter_code' });
+            }
+
+            const tagsArray = problem_tags ? problem_tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+            const selectTagsIdsQuery = `SELECT id, name FROM tags WHERE name IN (?)`;
+
+            if (tagsArray.length === 0) {
+              const deleteTagsQuery = `DELETE FROM problem_tags WHERE problem_id = ?`;
+              db.query(deleteTagsQuery, [problemId], (err) => {
+                if (err) {
+                  console.error('Error deleting problem tags:', err);
+                  return res.status(500).json({ message: 'Database error deleting problem_tags' });
+                }
+                return res.status(200).json({ message: 'Problem updated successfully without tags' });
+              });
+            } else {
+              db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
+                if (err) {
+                  console.error('Error selecting tags:', err);
+                  return res.status(500).json({ message: 'Database error selecting tags' });
+                }
+
+                const tagIds = tagsRows.map(row => row.id);
+
+                const deleteTagsQuery = `DELETE FROM problem_tags WHERE problem_id = ?`;
+
+                db.query(deleteTagsQuery, [problemId], (err) => {
+                  if (err) {
+                    console.error('Error deleting problem tags:', err);
+                    return res.status(500).json({ message: 'Database error deleting problem_tags' });
+                  }
+
+                  if (tagIds.length === 0) {
+                    return res.status(200).json({ message: 'Problem updated successfully (no tags matched)' });
+                  }
+
+                  const insertValues = tagIds.map(tagId => [problemId, tagId]);
+
+                  const insertTagsQuery = `INSERT INTO problem_tags (problem_id, tag_id) VALUES ?`;
+
+                  db.query(insertTagsQuery, [insertValues], (err) => {
+                    if (err) {
+                      console.error('Error inserting problem tags:', err);
+                      return res.status(500).json({ message: 'Database error inserting problem_tags' });
+                    }
+
+                    return res.status(200).json({ message: 'Problem updated successfully' });
+                  });
+                });
+              });
+            }
+          });
+        });
+      });
+    });
+  });
+};
+
+
+
 const deleteProblem = (req, res) => {
   const problemId = req.body.id;
 
@@ -261,5 +480,7 @@ module.exports = {
   getUserById,
   deleteUser,
   getAllProblems,
+  getProblemById,
+  updateProblem,
   deleteProblem
 };

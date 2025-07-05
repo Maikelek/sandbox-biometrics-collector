@@ -24,6 +24,7 @@ import {
 import { Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
 
 const difficultyColor = {
@@ -34,6 +35,7 @@ const difficultyColor = {
 
 const AdminProblems = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -46,7 +48,9 @@ const AdminProblems = () => {
   const fetchProblems = useCallback(() => {
     setLoading(true);
     axios
-      .get(`http://localhost:1234/admin/problems?page=${page}`)
+      .get(`http://localhost:1234/admin/problems?page=${page}`, {
+        withCredentials: true,
+      })
       .then((res) => {
         const { problems, total } = res.data;
         const enhanced = problems.map((p) => ({
@@ -72,7 +76,7 @@ const AdminProblems = () => {
   };
 
   const handleEdit = (problemId) => {
-    alert(`Edit problem ${problemId}`);
+    navigate(`/admin/problem/${problemId}`);
   };
 
   const handleDelete = (problem) => {
@@ -83,6 +87,7 @@ const AdminProblems = () => {
   const confirmDelete = () => {
     axios
       .delete(`http://localhost:1234/admin/problems`, {
+        withCredentials: true,
         data: { id: selectedProblem.id },
       })
       .then(() => {

@@ -1,18 +1,23 @@
 const express = require('express');
 const router = express.Router(); 
 const adminController = require('../controllers/adminController');
+const {isAdmin} = require('../middleware/protector');
 
 router.route("/users")  
-    .get(adminController.getAllUsers)
-    .delete(adminController.deleteUser);
+    .get(isAdmin, adminController.getAllUsers)
+    .delete(isAdmin, adminController.deleteUser);
 
 router.route("/user/:id")  
-    .get(adminController.getUserById)
-    .put(adminController.updateUser);
+    .get(isAdmin, adminController.getUserById)
+    .put(isAdmin, adminController.updateUser);
 
 router.route("/problems")  
-    .get(adminController.getAllProblems)
-    .delete(adminController.deleteProblem);
+    .get(isAdmin, adminController.getAllProblems)
+    .delete(isAdmin, adminController.deleteProblem);
+
+router.route("/problem/:id")
+    .get(isAdmin, adminController.getProblemById)
+    .put(isAdmin, adminController.updateProblem);
 
 
 module.exports = router;

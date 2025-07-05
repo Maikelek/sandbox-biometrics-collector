@@ -83,32 +83,39 @@ const CodeEditor = () => {
   const isRunning = output === t('editor.running') + '...';
   const theme = useTheme();
 
-  const handleRunCode = async () => {
-    try {
-      setOutput(t('editor.running') + '...');
-      setDialogOpen(true);
-      console.log(user.id, problem.id)
-      const response = await axios.post('http://localhost:1234/code', {
+const handleRunCode = async () => {
+  try {
+    setOutput(t('editor.running') + '...');
+    setDialogOpen(true);
+    console.log(user.id, problem.id);
+
+    const response = await axios.post(
+      'http://localhost:1234/code',
+      {
         code,
         language,
         problem: problem?.problem || '',
         userId: user?.id || null,
         problemId: problem?.id || null,
-      });
-
-      if (response.data.results?.length > 0) {
-        const formattedResults = response.data.results.map((r, idx) =>
-        `#${idx + 1} ${t('editor.input')}: ${r.input}\n${t('editor.expected')}: ${r.expected}\n${t('editor.output')}: ${r.output}\n${t('editor.result')}: ${r.passed ? '✅' : '❌'}\n`)
-        .join('\n');
-        setOutput(formattedResults);
-      } else {
-        setOutput(t('editor.noOutput'));
+      },
+      {
+        withCredentials: true,
       }
-    } catch (err) {
-      console.error('Error running code:', err);
-      setOutput(`${t('error')}: ${err.response?.data?.error || err.message}`);
+    );
+
+    if (response.data.results?.length > 0) {
+      const formattedResults = response.data.results.map((r, idx) =>
+        `#${idx + 1} ${t('editor.input')}: ${r.input}\n${t('editor.expected')}: ${r.expected}\n${t('editor.output')}: ${r.output}\n${t('editor.result')}: ${r.passed ? '✅' : '❌'}\n`
+      ).join('\n');
+      setOutput(formattedResults);
+    } else {
+      setOutput(t('editor.noOutput'));
     }
-  };
+  } catch (err) {
+    console.error('Error running code:', err);
+    setOutput(`${t('error')}: ${err.response?.data?.error || err.message}`);
+  }
+};
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -117,6 +124,7 @@ const CodeEditor = () => {
   useEffect(() => {
     axios
       .get(`http://localhost:1234/problem/info/${problemId}`, {
+        withCredentials: true,
         params: {
           lang: i18n.language,
         },

@@ -86,6 +86,7 @@ const Register = () => {
 
     try {
       const res = await axios.post("http://localhost:1234/register", {
+        withCredentials: true,
         ...formData,
         biometricConsent: consent,
       });

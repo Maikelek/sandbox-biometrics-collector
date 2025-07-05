@@ -41,7 +41,10 @@ const AdminUsers = () => {
   const fetchUsers = useCallback(() => {
     setLoading(true);
     axios
-      .get(`http://localhost:1234/admin/users?page=${page}`)
+      .get(`http://localhost:1234/admin/users?page=${page}`, {
+        withCredentials: true,
+        params: { limit },
+      })
       .then((res) => {
         const { users, total } = res.data;
         const mappedUsers = users.map((user) => ({
@@ -78,6 +81,7 @@ const AdminUsers = () => {
   const confirmDelete = () => {
     axios
       .delete(`http://localhost:1234/admin/users`, {
+        withCredentials: true,
         data: { id: selectedUser.id },
       })
       .then(() => {

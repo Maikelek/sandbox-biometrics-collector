@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router(); 
 const problemController = require('../controllers/problemController');
+const {isAuthenticated} = require('../middleware/protector');
 
 router.route("/:userId")  
-    .get(problemController.getUserProblems)
+    .get(isAuthenticated, problemController.getUserProblems)
 
 router.route("/info/:problemId")  
-    .get(problemController.getProblemWithExamples)
+    .get(isAuthenticated, problemController.getProblemWithExamples)
 
 
 module.exports = router;

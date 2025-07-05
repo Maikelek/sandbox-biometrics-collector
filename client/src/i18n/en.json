@@ -25,6 +25,7 @@
     "have-account": "Already have an account?",
     "login-here": "Login here",
     "registered": "You have been successfully registered! Check your email for validation code.",
+    "save": "Save",
 
     "language": "Choose language",
     "toggle_theme": "Toggle color theme",
@@ -106,5 +107,20 @@
     "admin.users.consentChangeDate": "Consent change date",
     "admin.users.updateSuccess": "User has been successfully updated",
 
-    "admin.problems.title": "Problem Management"
+    "admin.problems.title": "Problem Management",
+    "admin.problems.editTitle": "Edit challenge",
+    "admin.problems.basicInfo": "Basic Informations",
+    "admin.problems.name": "Name",
+    "admin.problems.functionName": "Name of the function",
+    "admin.problems.difficulty": "Difficulty",
+    "admin.problems.description": "Description",
+    "admin.problems.input": "Input",
+    "admin.problems.output": "Output",
+    "admin.problems.examples": "Examples",
+    "admin.problems.exampleInput": "Example Input",
+    "admin.problems.exampleOutput": "Example Output",
+    "admin.problems.starterCode": "Starter Code",
+    "admin.problems.tags": "Tags",
+    "admin.problems.selectTags": "Select tags",
+    "admin.problems.updateSuccess": "Problem has been successfully updated"
   }

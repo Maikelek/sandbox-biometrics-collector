@@ -41,7 +41,9 @@ const Problems = () => {
 
     setLoading(true);
     axios
-      .get(`http://localhost:1234/problem/${userId}?page=${currentPage}`)
+      .get(`http://localhost:1234/problem/${userId}?page=${currentPage}`, {
+        withCredentials: true,
+      })
       .then((res) => {
         const { problems, done, total } = res.data;
 

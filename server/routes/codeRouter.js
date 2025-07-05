@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const codeController = require('../controllers/codeController');
+const {isAuthenticated} = require('../middleware/protector');
 
 
 router.route("/")  
-    .post(codeController.runCode);
+    .post(isAuthenticated, codeController.runCode);
 
 module.exports = router;

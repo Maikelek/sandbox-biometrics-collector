@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import CodeEditor from "./pages/CodeEditor";
 
+import AdminProblemEdit from "./pages/admin/AdminProblemEdit";
 import AdminUserEdit from "./pages/admin/AdminUserEdit";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProblems from "./pages/admin/AdminProblems";
@@ -14,6 +15,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import ProtectedRoute from "./hooks/ProtectedRoute";
 import PublicOnlyRoute from "./hooks/PublicOnlyRoute";
+import AdminRoute from "./hooks/AdminRoute";
 
 import './App.css';
 import Problems from "./pages/Problems";
@@ -34,11 +36,13 @@ function App() {
             <Route path="/register" element={<PublicOnlyRoute> {<Register />} </PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />
 
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/user/:id" element={<AdminUserEdit />} />
+            <Route path="/admin/users" element={<AdminRoute> {<AdminUsers />} </AdminRoute>} />
+            <Route path="/admin/user/:id" element={<AdminRoute> {<AdminUserEdit />} </AdminRoute>} />
 
-            <Route path="/admin/problems" element={<AdminProblems />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/problems" element={<AdminRoute> {<AdminProblems />} </AdminRoute>} />
+            <Route path="/admin/problem/:id" element={<AdminRoute> {<AdminProblemEdit />} </AdminRoute>} />
+
+            <Route path="/admin" element={<AdminRoute> {<AdminDashboard />} </AdminRoute>} />
 
 
             

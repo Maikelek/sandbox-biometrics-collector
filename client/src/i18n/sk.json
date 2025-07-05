@@ -25,6 +25,7 @@
     "have-account": "Už máte účet?",
     "login-here": "Prihláste sa tu",
     "registered": "Úspešne ste sa zaregistrovali, pozrite si svoj e-mail pre overovací kód.",
+    "save": "Uložiť",
 
     "language": "Voľba jazyka",
     "toggle_theme": "Zmena farbeného motívu",
@@ -106,6 +107,20 @@
     "admin.users.consentChangeDate": "Zmena súhlasu",
     "admin.users.updateSuccess": "Používateľ bol úspešne aktualizovaný",
 
-    "admin.problems.title": "Správa problémov"
-
+    "admin.problems.title": "Správa výziev",
+    "admin.problems.editTitle": "Upraviť výzvu",
+    "admin.problems.basicInfo": "Základné informácie",
+    "admin.problems.name": "Názov",
+    "admin.problems.functionName": "Názov funkcie",
+    "admin.problems.difficulty": "Obtiažnosť",
+    "admin.problems.description": "Popis",
+    "admin.problems.input": "Vstup",
+    "admin.problems.output": "Výstup",
+    "admin.problems.examples": "Príklady",
+    "admin.problems.exampleInput": "Príklad vstupu",
+    "admin.problems.exampleOutput": "Príklad výstupu",
+    "admin.problems.starterCode": "Štartovací kód",
+    "admin.problems.tags": "Tagy",
+    "admin.problems.selectTags": "Vyberte tagy",
+    "admin.problems.updateSuccess": "Výzva bola úspešne aktualizovaná"
   }

@@ -30,9 +30,6 @@ const NavBar = () => {
     e.preventDefault();
     try {
       const response = await axios.delete("http://localhost:1234/auth", {
-        headers: {
-          'Content-Type': 'application/json'
-        },
         withCredentials: true
       });
       if (response.data.logout === true) {

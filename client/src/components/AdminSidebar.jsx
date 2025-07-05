@@ -37,7 +37,6 @@ const AdminSidebar = () => {
   const handleLogout = async () => {
     try {
       const res = await axios.delete('http://localhost:1234/auth', {
-        headers: { 'Content-Type': 'application/json' },
         withCredentials: true
       });
       if (res.data.logout === true) setUser(null);

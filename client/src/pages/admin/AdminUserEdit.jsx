@@ -30,7 +30,9 @@ const AdminUserEdit = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:1234/admin/user/${userId}`)
+      .get(`http://localhost:1234/admin/user/${userId}`, {
+        withCredentials: true,
+        })
       .then((res) => {
         setUser(res.data);
         setLoading(false);
@@ -58,14 +60,18 @@ const AdminUserEdit = () => {
     }
 
     axios
-      .put(`http://localhost:1234/admin/user/${userId}`, updatedUser)
-      .then(() => {
-        setSnackbarOpen(true);
-        setTimeout(() => navigate('/admin/users'), 1500);
-      })
-      .catch((err) => {
-        console.error('Error updating user:', err);
-      });
+    .put(
+      `http://localhost:1234/admin/user/${userId}`,
+      updatedUser,
+      { withCredentials: true }
+    )
+    .then(() => {
+      setSnackbarOpen(true);
+      setTimeout(() => navigate('/admin/users'), 1500);
+    })
+    .catch((err) => {
+      console.error('Error updating user:', err);
+    });
   };
 
   if (loading || !user) {
