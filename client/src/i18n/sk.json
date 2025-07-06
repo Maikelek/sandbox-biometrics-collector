@@ -52,6 +52,20 @@
     "index.subtitle": "Vaše IDE s biometrickým zbieraním dát, programovacími výzvami a ďalším!",
     "index.button": "Začať",
     "index.rights": " Marián Zelinka | Všetky práva vyhradené.",
+    "index.featuresTitle": "Funkcie",
+    "index.feature1Title": "Zber biometrických údajov",
+    "index.feature1Desc": "Zbierame biometrické údaje na hodnotenie písania kódu",
+    "index.feature2Title": "Programovacie výzvy",
+    "index.feature2Desc": "Riešte programovacie výzvy na zlepšenie svojich schopností",
+    "index.feature3Title": "Admin Menu",
+    "index.feature3Desc": "Spravujte užívateľov a programovacie výzvy",
+    "index.infoSectionTitle": "Informácie",
+    "index.info1Title": "Zber biometrických údajov",
+    "index.info1Desc": "Zbierame biometrické údaje na účely hodnotenia písania kódu. Tieto údaje sú bezpečne uložené a nikdy nebudú zdieľané s tretími stranami. Môžete ich kedykoľvek odvolať kontaktovaním správcu údajov.", 
+    "index.info2Title": "Programovacie výzvy",
+    "index.info2Desc": "Riešte programovacie výzvy, aby ste zlepšili svoje schopnosti. Môžete si vybrať z rôznych úrovní obtiažnosti a tém. Po úspešnom vyriešení výzvy môžete sledovať svoj pokrok.",
+    "index.info3Title": "Admin Menu",
+    "index.info3Desc": "Ako administrátor môžete spravovať užívateľov a programovacie výzvy. Môžete upravovať účty užívateľov, mazať ich a spravovať programovacie výzvy vrátane pridávania, úprav a mazania.",
 
     "problems.title": "Programovacie výzvy",
     "problems.name": "Názov",
@@ -95,6 +109,7 @@
     "admin.users.confirmDeleteMessage": "Naozaj chcete zmazať používateľa {{name}}?",
     "admin.users.deletedSuccess": "Používateľ bol úspešne zmazaný.",
     "admin.users.confirmDeleteTitle": "Potvrdenie zmazania",
+    "admin.problems.add": "Pridať novú výzvu",
 
     "admin.users.editTitle": "Upraviť používateľa",
     "admin.users.email": "Email",
@@ -106,9 +121,12 @@
     "admin.users.registrationDate": "Dátum registrácie",
     "admin.users.consentChangeDate": "Zmena súhlasu",
     "admin.users.updateSuccess": "Používateľ bol úspešne aktualizovaný",
+    "admin.users.createSuccess": "Používateľ bol úspešne vytvorený",
+    "admin.users.addUser": "Pridať nového používateľa",
 
     "admin.problems.title": "Správa výziev",
     "admin.problems.editTitle": "Upraviť výzvu",
+    "admin.problems.addTitle": "Pridať výzvu",
     "admin.problems.basicInfo": "Základné informácie",
     "admin.problems.name": "Názov",
     "admin.problems.functionName": "Názov funkcie",
@@ -122,5 +140,7 @@
     "admin.problems.starterCode": "Štartovací kód",
     "admin.problems.tags": "Tagy",
     "admin.problems.selectTags": "Vyberte tagy",
-    "admin.problems.updateSuccess": "Výzva bola úspešne aktualizovaná"
+    "admin.problems.updateSuccess": "Výzva bola úspešne aktualizovaná",
+    "admin.problems.createSuccess": "Výzva bola úspešne vytvorená",
+    "admin.problems.addButton": "Pridať výzvu"
   }

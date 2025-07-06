@@ -52,6 +52,20 @@
     "index.subtitle": "Your IDE with biometric data collecion, code challenges and more!",
     "index.button": "Get Started",
     "index.rights": " Marián Zelinka | All rights reserved.",
+    "index.featuresTitle": "Features",
+    "index.feature1Title": "Biometric Data Collection",
+    "index.feature1Desc": "We collect biometric data to evaluate code writing",
+    "index.feature2Title": "Coding Challenges",
+    "index.feature2Desc": "Solve coding challenges to improve your skills",
+    "index.feature3Title": "Admin Menu",
+    "index.feature3Desc": "Manage users and coding challenges",
+    "index.infoSectionTitle": "Informations",
+    "index.info1Title": "Biometric Data Collection",
+    "index.info1Desc": "We collect biometric data to evaluate code writing. This data is securely stored and used for analysis. You can revoke your consent at any time. We evaluate if you are useing AI for code writing, your age or potentional health issues.", 
+    "index.info2Title": "Coding Challenges",
+    "index.info2Desc": "Solve coding challenges to improve your skills. Challenges are categorized by difficulty and tags. You can track your progress and see which challenges you have solved.",
+    "index.info3Title": "Admin Menu",
+    "index.info3Desc": "As an admin, you can manage users and coding challenges. You can edit user accounts, delete users, and manage coding challenges including adding, editing, and deleting them.",
 
     "problems.title": "Coding challenges",
     "problems.name": "Name",
@@ -95,8 +109,10 @@
     "admin.users.confirmDeleteMessage": "Are you sure you want to delete user {{name}}?",
     "admin.users.deletedSuccess": "User has been successfully deleted.",
     "admin.users.confirmDeleteTitle": "Delete confirmation",
+    "admin.problems.add": "Add new challenge",
 
     "admin.users.editTitle": "Edit User",
+    "admin.users.addTitle": "Add User",
     "admin.users.email": "Email",
     "admin.users.isAdmin": "Admin",
     "admin.users.isValid": "Valid account",
@@ -106,9 +122,12 @@
     "admin.users.registrationDate": "Registration date",
     "admin.users.consentChangeDate": "Consent change date",
     "admin.users.updateSuccess": "User has been successfully updated",
+    "admin.users.createSuccess": "User has been successfully created",
+    "admin.users.addUser": "Add new user",
 
     "admin.problems.title": "Problem Management",
     "admin.problems.editTitle": "Edit challenge",
+    "admin.problems.addTitle": "Add challenge",
     "admin.problems.basicInfo": "Basic Informations",
     "admin.problems.name": "Name",
     "admin.problems.functionName": "Name of the function",
@@ -122,5 +141,7 @@
     "admin.problems.starterCode": "Starter Code",
     "admin.problems.tags": "Tags",
     "admin.problems.selectTags": "Select tags",
-    "admin.problems.updateSuccess": "Problem has been successfully updated"
+    "admin.problems.updateSuccess": "Problem has been successfully updated",
+    "admin.problems.createSuccess": "Problem has been successfully created",
+    "admin.problems.addButton": "Add Challenge"
   }

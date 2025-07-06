@@ -2,7 +2,6 @@ const db = require("../db");
 const bcrypt = require("bcryptjs");
 
 /* USERS */
-
 const getAllUsers = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 8;
@@ -65,6 +64,67 @@ const getUserById = (req, res) => {
 
     res.status(200).json(result[0]);
   });
+};
+
+const addUser = async (req, res) => {
+  const {
+    user_name,
+    user_email,
+    user_isAdmin,
+    user_isValid,
+    user_consent,
+    user_password,
+  } = req.body;
+
+  if (
+    user_name === undefined ||
+    user_email === undefined ||
+    user_isAdmin === undefined ||
+    user_isValid === undefined ||
+    user_consent === undefined ||
+    !user_password
+  ) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(user_password, 8);
+
+    const sql = `
+      INSERT INTO users (
+        user_name,
+        user_email,
+        user_password,
+        user_isAdmin,
+        user_isValid,
+        user_consent,
+        user_registration_date,
+        user_consent_change_date
+      ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW());
+    `;
+
+    const params = [
+      user_name,
+      user_email,
+      hashedPassword,
+      user_isAdmin,
+      user_isValid,
+      user_consent
+    ];
+
+    db.query(sql, params, (err, result) => {
+      if (err) {
+        console.error("Error adding user:", err);
+        return res.status(500).json({ message: "Database error during insert" });
+      }
+
+      res.status(201).json({ message: "User created successfully", userId: result.insertId });
+    });
+
+  } catch (err) {
+    console.error("Error hashing password:", err);
+    res.status(500).json({ message: "Server error during password hashing" });
+  }
 };
 
 const updateUser = async (req, res) => {
@@ -172,7 +232,6 @@ const deleteUser = (req, res) => {
 
 
 /* PROBLEMS */
-
 const getAllProblems = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 8;
@@ -231,7 +290,7 @@ const getProblemById = (req, res) => {
     SELECT
       problems.id,
       problems.name,
-      problems.problem AS function_name,
+      problems.problem,
       problems.difficulty,
       problem_details.description AS description_slovak,
       problem_details.input AS input_slovak,
@@ -295,6 +354,19 @@ const getProblemById = (req, res) => {
         });
       });
     });
+  });
+};
+
+const getAllTags = (req, res) => {
+  const allTagsQuery = `SELECT id, name FROM tags`;
+
+  db.query(allTagsQuery, (err, results) => {
+    if (err) {
+      console.error('Error fetching tags:', err);
+      return res.status(500).json({ message: 'Database error fetching tags' });
+    }
+
+    return res.status(200).json(results);
   });
 };
 
@@ -437,6 +509,120 @@ const updateProblem = (req, res) => {
   });
 };
 
+const addProblem = (req, res) => {
+  const {
+    name,
+    problem,
+    difficulty,
+    description_slovak,
+    input_slovak,
+    output_slovak,
+    description_english,
+    input_english,
+    output_english,
+    example_input,
+    example_output,
+    starter_code_py,
+    starter_code_java,
+    starter_code_c,
+    problem_tags,
+  } = req.body;
+
+  const insertProblemQuery = `
+    INSERT INTO problems (name, problem, difficulty)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(insertProblemQuery, [name, problem, difficulty], (err, result) => {
+    if (err) {
+      console.error('Error inserting into problems:', err);
+      return res.status(500).json({ message: 'Database error inserting problem' });
+    }
+
+    const problemId = result.insertId;
+
+    const insertDetailsSkQuery = `
+      INSERT INTO problem_details (id, description, input, output)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    const insertDetailsEnQuery = `
+      INSERT INTO problem_details_en (id, description, input, output)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    const insertExamplesQuery = `
+      INSERT INTO problem_examples (problem_id, example_input, example_output)
+      VALUES (?, ?, ?)
+    `;
+
+    const insertStarterCodeQuery = `
+      INSERT INTO problem_starter_code (problem_id, starter_code_py, starter_code_java, starter_code_c)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    db.query(insertDetailsSkQuery, [problemId, description_slovak, input_slovak, output_slovak], (err) => {
+      if (err) {
+        console.error('Error inserting SK details:', err);
+        return res.status(500).json({ message: 'Error inserting problem_details' });
+      }
+
+      db.query(insertDetailsEnQuery, [problemId, description_english, input_english, output_english], (err) => {
+        if (err) {
+          console.error('Error inserting EN details:', err);
+          return res.status(500).json({ message: 'Error inserting problem_details_en' });
+        }
+
+        db.query(insertExamplesQuery, [problemId, example_input, example_output], (err) => {
+          if (err) {
+            console.error('Error inserting examples:', err);
+            return res.status(500).json({ message: 'Error inserting problem_examples' });
+          }
+
+          db.query(insertStarterCodeQuery, [problemId, starter_code_py, starter_code_java, starter_code_c], (err) => {
+            if (err) {
+              console.error('Error inserting starter code:', err);
+              return res.status(500).json({ message: 'Error inserting starter_code' });
+            }
+
+            const tagsArray = problem_tags
+              ? problem_tags.split(',').map((t) => t.trim()).filter(Boolean)
+              : [];
+
+            if (tagsArray.length === 0) {
+              return res.status(201).json({ message: 'Problem added successfully (no tags)' });
+            }
+
+            const selectTagsIdsQuery = `SELECT id FROM tags WHERE name IN (?)`;
+
+            db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
+              if (err) {
+                console.error('Error selecting tag IDs:', err);
+                return res.status(500).json({ message: 'Error selecting tag IDs' });
+              }
+
+              const insertValues = tagsRows.map(tag => [problemId, tag.id]);
+              if (insertValues.length === 0) {
+                return res.status(201).json({ message: 'Problem added successfully (no tags matched)' });
+              }
+
+              const insertTagsQuery = `INSERT INTO problem_tags (problem_id, tag_id) VALUES ?`;
+
+              db.query(insertTagsQuery, [insertValues], (err) => {
+                if (err) {
+                  console.error('Error inserting problem_tags:', err);
+                  return res.status(500).json({ message: 'Error inserting problem_tags' });
+                }
+
+                return res.status(201).json({ message: 'Problem added successfully' });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+};
 
 
 const deleteProblem = (req, res) => {
@@ -476,11 +662,14 @@ const deleteProblem = (req, res) => {
 
 module.exports = {
   getAllUsers,
+  addUser,
   updateUser,
   getUserById,
   deleteUser,
   getAllProblems,
   getProblemById,
+  addProblem,
+  getAllTags,
   updateProblem,
   deleteProblem
 };

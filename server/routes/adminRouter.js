@@ -5,6 +5,7 @@ const {isAdmin} = require('../middleware/protector');
 
 router.route("/users")  
     .get(isAdmin, adminController.getAllUsers)
+    .post(isAdmin, adminController.addUser)
     .delete(isAdmin, adminController.deleteUser);
 
 router.route("/user/:id")  
@@ -13,7 +14,11 @@ router.route("/user/:id")
 
 router.route("/problems")  
     .get(isAdmin, adminController.getAllProblems)
+    .post(isAdmin, adminController.addProblem)
     .delete(isAdmin, adminController.deleteProblem);
+
+router.route("/tags")  
+    .get(isAdmin, adminController.getAllTags)
 
 router.route("/problem/:id")
     .get(isAdmin, adminController.getProblemById)

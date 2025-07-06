@@ -21,7 +21,7 @@ import {
   Alert,
   Button,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete, Add } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -115,6 +115,17 @@ const AdminProblems = () => {
         <Typography variant="h4" gutterBottom>
           {t('admin.problems.title')}
         </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            onClick={() => navigate('/admin/problem/add')}
+          >
+            {t('admin.problems.add')}
+          </Button>
+        </Box>
 
         {loading ? (
           <CircularProgress />

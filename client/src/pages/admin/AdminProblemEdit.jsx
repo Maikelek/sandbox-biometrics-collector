@@ -35,19 +35,48 @@ const AdminProblemEdit = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const problemId = location.pathname.split('/')[3];
 
-  const [problem, setProblem] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const problemId = location.pathname.split("/")[3];
+  const isEditMode = problemId && problemId !== 'add';
+
+  const [problem, setProblem] = useState({
+    id: '',
+    name: '',
+    problem: '',
+    difficulty: '',
+    description_slovak: '',
+    description_english: '',
+    input_slovak: '',
+    input_english: '',
+    output_slovak: '',
+    output_english: '',
+    example_input: '',
+    example_output: '',
+    starter_code_py: '',
+    starter_code_java: '',
+    starter_code_c: '',
+    problem_tags: '',
+  });
+
+  const [loading, setLoading] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [tags, setTags] = useState([]);
 
   useEffect(() => {
+    if (!isEditMode) {
+      setLoading(false);
+      axios.get(`http://localhost:1234/admin/tags`, { withCredentials: true })
+        .then(res => setTags(res.data || []))
+        .catch(err => console.error('Error fetching tags:', err));
+      return;
+    }
+
     setLoading(true);
     axios
       .get(`http://localhost:1234/admin/problem/${problemId}`, {
-        withCredentials: true})
+        withCredentials: true,
+      })
       .then((res) => {
         setProblem(res.data.problem || res.data);
         setTags(res.data.allTags || []);
@@ -56,7 +85,7 @@ const AdminProblemEdit = () => {
         console.error('Error fetching problem:', err);
       })
       .finally(() => setLoading(false));
-  }, [problemId]);
+  }, [isEditMode, problemId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,27 +97,43 @@ const AdminProblemEdit = () => {
   };
 
   const handleSave = () => {
-    if (!problem) return;
-  
     setSaving(true);
-    axios
-      .put(
-        `http://localhost:1234/admin/problem/${problemId}`,
-        problem,
-        { withCredentials: true }
-      )
-      .then(() => {
-        setSnackbarOpen(true);
-        setTimeout(() => navigate('/admin/problems'), 1500);
-      })
-      .catch((err) => {
-        console.error('Error updating problem:', err);
-        alert(t('admin.problems.updateError') || 'Error updating problem');
-      })
-      .finally(() => setSaving(false));
+    if (isEditMode) {
+      axios
+        .put(
+          `http://localhost:1234/admin/problem/${problemId}`,
+          problem,
+          { withCredentials: true }
+        )
+        .then(() => {
+          setSnackbarOpen(true);
+          setTimeout(() => navigate('/admin/problems'), 1500);
+        })
+        .catch((err) => {
+          console.error('Error updating problem:', err);
+          alert(t('admin.problems.updateError') || 'Error updating problem');
+        })
+        .finally(() => setSaving(false));
+    } else {
+      axios
+        .post(
+          `http://localhost:1234/admin/problems`,
+          problem,
+          { withCredentials: true }
+        )
+        .then(() => {
+          setSnackbarOpen(true);
+          setTimeout(() => navigate('/admin/problems'), 1500);
+        })
+        .catch((err) => {
+          console.error('Error creating problem:', err);
+          alert(t('admin.problems.createError') || 'Error creating problem');
+        })
+        .finally(() => setSaving(false));
+    }
   };
 
-  if (loading || !problem) {
+  if (loading) {
     return (
       <>
         <AdminSidebar />
@@ -139,7 +184,7 @@ const AdminProblemEdit = () => {
       >
         <Paper elevation={4} sx={{ p: 5, maxWidth: 1000, width: '100%', borderRadius: 4 }}>
           <Typography variant="h4" align="center" gutterBottom fontWeight={600} color="primary">
-            {t('admin.problems.editTitle')}
+            {isEditMode ? t('admin.problems.editTitle') : t('admin.problems.addTitle')}
           </Typography>
 
           <Box sx={{ mb: 4 }}>
@@ -148,7 +193,9 @@ const AdminProblemEdit = () => {
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Stack spacing={2}>
-              <TextField label="ID" value={problem.id} disabled fullWidth />
+              {isEditMode && (
+                <TextField label="ID" value={problem.id} disabled fullWidth />
+              )}
               <TextField
                 label={t('admin.problems.name')}
                 name="name"
@@ -158,8 +205,10 @@ const AdminProblemEdit = () => {
               />
               <TextField
                 label={t('admin.problems.functionName')}
-                value={problem.function_name}
-                disabled
+                value={problem.problem}
+                disabled={isEditMode}
+                onChange={handleChange}
+                name="problem"
                 fullWidth
               />
               <FormControl fullWidth>
@@ -305,7 +354,12 @@ const AdminProblemEdit = () => {
               onClick={handleSave}
               disabled={saving}
             >
-              {saving ? t('saving') || 'Saving...' : t('save')}
+              {saving
+                ? t('saving') || 'Saving...'
+                : isEditMode
+                ? t('save')
+                : t('admin.problems.addButton') || 'Add'}
+                
             </Button>
             <Button
               variant="outlined"
@@ -332,7 +386,9 @@ const AdminProblemEdit = () => {
           sx={{ width: '100%' }}
           variant="filled"
         >
-          {t('admin.problems.updateSuccess')}
+          {isEditMode
+            ? t('admin.problems.updateSuccess')
+            : t('admin.problems.createSuccess')}
         </Alert>
       </Snackbar>
     </>

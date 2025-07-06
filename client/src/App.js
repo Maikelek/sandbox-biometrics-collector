@@ -37,9 +37,11 @@ function App() {
             <Route path="/login" element={<PublicOnlyRoute> {<Login />} </PublicOnlyRoute>} />
 
             <Route path="/admin/users" element={<AdminRoute> {<AdminUsers />} </AdminRoute>} />
+            <Route path="/admin/user/add" element={<AdminRoute> {<AdminUserEdit />} </AdminRoute>} />
             <Route path="/admin/user/:id" element={<AdminRoute> {<AdminUserEdit />} </AdminRoute>} />
 
             <Route path="/admin/problems" element={<AdminRoute> {<AdminProblems />} </AdminRoute>} />
+            <Route path="/admin/problem/add" element={<AdminRoute> {<AdminProblemEdit />} </AdminRoute>} />
             <Route path="/admin/problem/:id" element={<AdminRoute> {<AdminProblemEdit />} </AdminRoute>} />
 
             <Route path="/admin" element={<AdminRoute> {<AdminDashboard />} </AdminRoute>} />

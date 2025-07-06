@@ -19,6 +19,7 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Button,
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -73,6 +74,10 @@ const AdminUsers = () => {
     navigate(`/admin/user/${userId}`);
   };
 
+  const handleAddUser = () => {
+    navigate('/admin/user/add');
+  };
+
   const handleDelete = (user) => {
     setSelectedUser(user);
     setDeleteDialogOpen(true);
@@ -109,6 +114,16 @@ const AdminUsers = () => {
         <Typography variant="h4" gutterBottom>
           {t('admin.users.title')}
         </Typography>
+
+        <Box display="flex" justifyContent="flex-end" mb={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddUser}
+          >
+            {t('admin.users.addUser')}
+          </Button>
+        </Box>
 
         {loading ? (
           <CircularProgress />
@@ -183,12 +198,12 @@ const AdminUsers = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <IconButton onClick={() => setDeleteDialogOpen(false)}>
+            <Button onClick={() => setDeleteDialogOpen(false)}>
               {t('cancel')}
-            </IconButton>
-            <IconButton onClick={confirmDelete} color="error">
+            </Button>
+            <Button onClick={confirmDelete} color="error">
               {t('delete')}
-            </IconButton>
+            </Button>
           </DialogActions>
         </Dialog>
 

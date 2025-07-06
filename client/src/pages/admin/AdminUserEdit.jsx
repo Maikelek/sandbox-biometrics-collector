@@ -22,26 +22,36 @@ const AdminUserEdit = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.pathname.split('/')[3];
+  const isEditMode = userId && userId !== 'add';
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({
+    user_email: '',
+    user_name: '',
+    user_isAdmin: 0,
+    user_isValid: 1,
+    user_consent: 0,
+  });
+
   const [newPassword, setNewPassword] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isEditMode);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:1234/admin/user/${userId}`, {
-        withCredentials: true,
+    if (isEditMode) {
+      axios
+        .get(`http://localhost:1234/admin/user/${userId}`, {
+          withCredentials: true,
         })
-      .then((res) => {
-        setUser(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching user:', err);
-        setLoading(false);
-      });
-  }, [userId]);
+        .then((res) => {
+          setUser(res.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Error fetching user:', err);
+          setLoading(false);
+        });
+    }
+  }, [userId, isEditMode]);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -52,29 +62,26 @@ const AdminUserEdit = () => {
   };
 
   const handleSave = () => {
-    const updatedUser = { ...user };
+    const userData = { ...user };
     if (newPassword.trim() !== '') {
-      updatedUser.user_password = newPassword;
-    } else {
-      delete updatedUser.user_password;
+      userData.user_password = newPassword;
     }
 
-    axios
-    .put(
-      `http://localhost:1234/admin/user/${userId}`,
-      updatedUser,
-      { withCredentials: true }
-    )
-    .then(() => {
-      setSnackbarOpen(true);
-      setTimeout(() => navigate('/admin/users'), 1500);
-    })
-    .catch((err) => {
-      console.error('Error updating user:', err);
-    });
+    const request = isEditMode
+      ? axios.put(`http://localhost:1234/admin/user/${userId}`, userData, { withCredentials: true })
+      : axios.post(`http://localhost:1234/admin/users`, userData, { withCredentials: true });
+
+    request
+      .then(() => {
+        setSnackbarOpen(true);
+        setTimeout(() => navigate('/admin/users'), 1500);
+      })
+      .catch((err) => {
+        console.error('Error saving user:', err);
+      });
   };
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <>
         <AdminSidebar />
@@ -100,17 +107,20 @@ const AdminUserEdit = () => {
       >
         <Paper elevation={3} sx={{ p: 3, maxWidth: 600, width: '100%' }}>
           <Typography variant="h4" gutterBottom align="center">
-            {t('admin.users.editTitle')}
+            {isEditMode ? t('admin.users.editTitle') : t('admin.users.addTitle')}
           </Typography>
 
-          <TextField
-            fullWidth
-            label="ID"
-            name="user_id"
-            value={user.user_id}
-            disabled
-            sx={{ mb: 2 }}
-          />
+          {isEditMode && (
+            <TextField
+              fullWidth
+              label="ID"
+              name="user_id"
+              value={user.user_id}
+              disabled
+              sx={{ mb: 2 }}
+            />
+          )}
+
           <TextField
             fullWidth
             label={t('admin.users.email')}
@@ -174,22 +184,26 @@ const AdminUserEdit = () => {
             sx={{ mb: 2 }}
           />
 
-          <TextField
-            fullWidth
-            label={t('admin.users.registrationDate')}
-            name="user_registration_date"
-            value={new Date(user.user_registration_date).toLocaleString()}
-            disabled
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label={t('admin.users.consentChangeDate')}
-            name="user_consent_change_date"
-            value={new Date(user.user_consent_change_date).toLocaleString()}
-            disabled
-            sx={{ mb: 2 }}
-          />
+          {isEditMode && (
+            <>
+              <TextField
+                fullWidth
+                label={t('admin.users.registrationDate')}
+                name="user_registration_date"
+                value={new Date(user.user_registration_date).toLocaleString()}
+                disabled
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label={t('admin.users.consentChangeDate')}
+                name="user_consent_change_date"
+                value={new Date(user.user_consent_change_date).toLocaleString()}
+                disabled
+                sx={{ mb: 2 }}
+              />
+            </>
+          )}
 
           <Box mt={2} display="flex" justifyContent="center">
             <Button variant="contained" color="primary" onClick={handleSave}>
@@ -213,7 +227,7 @@ const AdminUserEdit = () => {
           severity="success"
           sx={{ width: '100%' }}
         >
-          {t('admin.users.updateSuccess')}
+          {isEditMode ? t('admin.users.updateSuccess') : t('admin.users.createSuccess')}
         </Alert>
       </Snackbar>
     </>
