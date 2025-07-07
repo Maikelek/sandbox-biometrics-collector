@@ -1,0 +1,12 @@
+{
+    "watch": ["controllers", "routes", "app.js", "db.js", "mailer.js"],
+    "ignore": [
+      "testcases/*",
+      "testcases/**",
+      "testcases/**/*.json",
+      "temp/*",
+      "temp/**"
+    ],
+    "ext": "js,json"
+  }
+  

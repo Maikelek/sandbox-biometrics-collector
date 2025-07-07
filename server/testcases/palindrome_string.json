@@ -4,7 +4,8 @@
       { "input": "radar", "expected": "True" },
       { "input": "TUKE", "expected": "False" },
       { "input": "level", "expected": "True" },
-      { "input": "madam", "expected": "True" }
+      { "input": "madam", "expected": "True" },
+      { "input": "test", "expected": "False" }
     ]
   }
   

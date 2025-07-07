@@ -21,11 +21,12 @@ import {
   Alert,
   Button,
 } from '@mui/material';
-import { Edit, Delete, Add } from '@mui/icons-material';
+import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
+import TestCaseDialog from '../../components/TestCaseDialog';
 
 const difficultyColor = {
   easy: 'success',
@@ -43,6 +44,8 @@ const AdminProblems = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [testCaseDialogOpen, setTestCaseDialogOpen] = useState(false);
+  const [selectedProblemId, setSelectedProblemId] = useState(null);
   const limit = 8;
 
   const fetchProblems = useCallback(() => {
@@ -99,6 +102,11 @@ const AdminProblems = () => {
         console.error('Error deleting problem:', err);
         setDeleteDialogOpen(false);
       });
+  };
+
+  const handleViewTestCases = (problemId) => {
+    setSelectedProblemId(problemId);
+    setTestCaseDialogOpen(true);
   };
 
   return (
@@ -166,6 +174,13 @@ const AdminProblems = () => {
                       </TableCell>
                       <TableCell align="right">
                         <IconButton
+                          aria-label="view-test-cases"
+                          color="secondary"
+                          onClick={() => handleViewTestCases(problem.id)}
+                        >
+                          <Visibility />
+                        </IconButton>
+                        <IconButton
                           aria-label="edit"
                           color="primary"
                           onClick={() => handleEdit(problem.id)}
@@ -215,6 +230,12 @@ const AdminProblems = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <TestCaseDialog
+          open={testCaseDialogOpen}
+          onClose={() => setTestCaseDialogOpen(false)}
+          problemId={selectedProblemId}
+        />
 
         <Snackbar
           open={snackbarOpen}
