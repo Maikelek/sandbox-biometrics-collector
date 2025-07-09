@@ -62,6 +62,7 @@ const AdminProblemEdit = () => {
   const [saving, setSaving] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [tags, setTags] = useState([]);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (!isEditMode) {
@@ -96,41 +97,42 @@ const AdminProblemEdit = () => {
     setProblem((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!problem.name.trim()) newErrors.name = t('validation.required');
+    if (!problem.problem.trim()) newErrors.problem = t('validation.required');
+    if (!problem.difficulty) newErrors.difficulty = t('validation.required');
+    if (!problem.description_slovak.trim()) newErrors.description_slovak = t('validation.required');
+    if (!problem.description_english.trim()) newErrors.description_english = t('validation.required');
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
+    if (!validate()) return;
+
     setSaving(true);
-    if (isEditMode) {
-      axios
-        .put(
-          `http://localhost:1234/admin/problem/${problemId}`,
-          problem,
-          { withCredentials: true }
-        )
-        .then(() => {
-          setSnackbarOpen(true);
-          setTimeout(() => navigate('/admin/problems'), 1500);
-        })
-        .catch((err) => {
-          console.error('Error updating problem:', err);
-          alert(t('admin.problems.updateError') || 'Error updating problem');
-        })
-        .finally(() => setSaving(false));
-    } else {
-      axios
-        .post(
-          `http://localhost:1234/admin/problems`,
-          problem,
-          { withCredentials: true }
-        )
-        .then(() => {
-          setSnackbarOpen(true);
-          setTimeout(() => navigate('/admin/problems'), 1500);
-        })
-        .catch((err) => {
-          console.error('Error creating problem:', err);
-          alert(t('admin.problems.createError') || 'Error creating problem');
-        })
-        .finally(() => setSaving(false));
-    }
+    const method = isEditMode ? axios.put : axios.post;
+    const url = isEditMode
+      ? `http://localhost:1234/admin/problem/${problemId}`
+      : `http://localhost:1234/admin/problems`;
+
+    method(url, problem, { withCredentials: true })
+      .then(() => {
+        setSnackbarOpen(true);
+        setTimeout(() => navigate('/admin/problems'), 1500);
+      })
+      .catch((err) => {
+        console.error('Error saving problem:', err);
+        alert(
+          isEditMode
+            ? t('admin.problems.updateError') || 'Error updating problem'
+            : t('admin.problems.createError') || 'Error creating problem'
+        );
+      })
+      .finally(() => setSaving(false));
   };
 
   if (loading) {
@@ -201,17 +203,21 @@ const AdminProblemEdit = () => {
                 name="name"
                 value={problem.name}
                 onChange={handleChange}
+                error={!!errors.name}
+                helperText={errors.name}
                 fullWidth
               />
               <TextField
                 label={t('admin.problems.functionName')}
-                value={problem.problem}
-                disabled={isEditMode}
-                onChange={handleChange}
                 name="problem"
+                value={problem.problem}
+                onChange={handleChange}
+                error={!!errors.problem}
+                helperText={errors.problem}
                 fullWidth
+                disabled={isEditMode}
               />
-              <FormControl fullWidth>
+              <FormControl fullWidth error={!!errors.difficulty}>
                 <InputLabel>{t('admin.problems.difficulty')}</InputLabel>
                 <Select
                   name="difficulty"
@@ -222,9 +228,7 @@ const AdminProblemEdit = () => {
                     const option = difficultyOptions.find((d) => d.value === selected);
                     return option ? (
                       <Chip label={option.label} color={option.color} variant="outlined" />
-                    ) : (
-                      selected
-                    );
+                    ) : selected;
                   }}
                 >
                   {difficultyOptions.map((opt) => (
@@ -234,6 +238,11 @@ const AdminProblemEdit = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.difficulty && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                    {errors.difficulty}
+                  </Typography>
+                )}
               </FormControl>
             </Stack>
           </Box>
@@ -255,6 +264,8 @@ const AdminProblemEdit = () => {
                   minRows={3}
                   value={problem[`description_${lang}`] || ''}
                   onChange={handleChange}
+                  error={!!errors[`description_${lang}`]}
+                  helperText={errors[`description_${lang}`]}
                   fullWidth
                 />
                 <TextField
@@ -359,7 +370,6 @@ const AdminProblemEdit = () => {
                 : isEditMode
                 ? t('save')
                 : t('admin.problems.addButton') || 'Add'}
-                
             </Button>
             <Button
               variant="outlined"

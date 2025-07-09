@@ -45,6 +45,9 @@ app.use('/problem', problemRouter);
 const codeRouter = require('./routes/codeRouter');
 app.use('/code', codeRouter);
 
+const resetPasswordRouter = require('./routes/resetPasswordRouter');
+app.use('/reset-password', resetPasswordRouter);
+
 const adminRouter = require('./routes/adminRouter');
 app.use('/admin', adminRouter);
 

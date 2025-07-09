@@ -17,6 +17,7 @@ import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../context/UserContext';
 import { useThemeContext } from '../context/ThemeContext';
+import ForgotPasswordDialog from '../components/ForgotPasswordDialog';
 import '../i18n';
 
 const Login = () => {
@@ -34,6 +35,7 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState('');
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   const handleLangChange = (_, lang) => lang && i18n.changeLanguage(lang);
 
@@ -162,6 +164,12 @@ const Login = () => {
           </Button>
 
           <Box mt={2} textAlign="center">
+            <Button variant="text" size="small" onClick={() => setForgotOpen(true)}>
+              {t('forgot-password')}
+            </Button>
+          </Box>
+
+          <Box mt={2} textAlign="center">
             <Typography variant="body2">
               {t('no-account')}{' '}
               <Button variant="text" onClick={() => navigate('/register')}>
@@ -171,6 +179,8 @@ const Login = () => {
           </Box>
         </Paper>
       </div>
+
+      <ForgotPasswordDialog open={forgotOpen} onClose={() => setForgotOpen(false)} />
     </>
   );
 };

@@ -33,6 +33,7 @@ const AdminUserEdit = () => {
   });
 
   const [newPassword, setNewPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(isEditMode);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -55,15 +56,40 @@ const AdminUserEdit = () => {
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
+    setErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
   const handleCheckboxChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.checked ? 1 : 0 });
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!user.user_email.match(/^\S+@\S+\.\S+$/)) {
+      newErrors.user_email = t('error-email');
+    }
+
+    if (!user.user_name.trim()) {
+      newErrors.user_name = t('error-name');
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      newErrors.newPassword = t('error-password-length');
+    }
+
+    return newErrors;
+  };
+
   const handleSave = () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     const userData = { ...user };
-    if (newPassword.trim() !== '') {
+    if (newPassword.trim()) {
       userData.user_password = newPassword;
     }
 
@@ -127,14 +153,19 @@ const AdminUserEdit = () => {
             name="user_email"
             value={user.user_email}
             onChange={handleChange}
+            error={Boolean(errors.user_email)}
+            helperText={errors.user_email}
             sx={{ mb: 2 }}
           />
+
           <TextField
             fullWidth
             label={t('admin.users.name')}
             name="user_name"
             value={user.user_name}
             onChange={handleChange}
+            error={Boolean(errors.user_name)}
+            helperText={errors.user_name}
             sx={{ mb: 2 }}
           />
 
@@ -179,8 +210,12 @@ const AdminUserEdit = () => {
             label={t('admin.users.newPassword')}
             name="newPassword"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder={t('admin.users.leaveBlankToKeep')}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              setErrors((prev) => ({ ...prev, newPassword: '' }));
+            }}
+            error={Boolean(errors.newPassword)}
+            helperText={errors.newPassword || t('admin.users.leaveBlankToKeep')}
             sx={{ mb: 2 }}
           />
 
@@ -222,11 +257,7 @@ const AdminUserEdit = () => {
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
           {isEditMode ? t('admin.users.updateSuccess') : t('admin.users.createSuccess')}
         </Alert>
       </Snackbar>

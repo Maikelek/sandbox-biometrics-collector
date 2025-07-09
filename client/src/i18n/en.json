@@ -17,6 +17,15 @@
     "error-email": "Please enter a valid email address.",
     "error-password": "Password must be at least 6 characters.",
     "error-password-match": "Passwords do not match.",
+    "validation.required": "This field is required.",
+
+    "forgot-password" : "Forgot your password?",
+    "forgot-password.title": "Forgot Password",
+    "forgot-password.email-sent": "An email with a password reset link has been sent to your email address.",
+    "forgot-password.code": "Authentication code",
+    "forgot-password.new-password": "New password",
+    "forgot-password.confirm-password": "Confirm new password",
+    "forgot-password.reset-password": "Reset Password",
 
     "no-account": "Don't have an account?",
     "login": "Login",
@@ -26,6 +35,10 @@
     "login-here": "Login here",
     "registered": "You have been successfully registered! Check your email for validation code.",
     "save": "Save",
+
+    "notfound.title": "Page Not Found",
+    "notfound.message": "Sorry, the page you are looking for does not exist or has been moved.",
+    "notfound.backHome": "Back to Home",
 
     "language": "Choose language",
     "toggle_theme": "Toggle color theme",

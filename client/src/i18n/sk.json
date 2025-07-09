@@ -17,6 +17,15 @@
     "error-email": "Prosím zadajte platnú e-mailovú adresu.",
     "error-password": "Heslo musí mať aspoň 6 znakov.",
     "error-password-match": "Heslá sa nezhodujú.",
+    "validation.required": "Toto pole je povinné.",
+
+    "forgot-password" : "Zabudli ste heslo?",
+    "forgot-password.title": "Zabudnuté heslo",
+    "forgot-password.email-sent": "E-mail s odkazom na obnovenie hesla bol odoslaný na vašu e-mailovú adresu.",
+    "forgot-password.code": "Overovací kód",
+    "forgot-password.new-password": "Nové heslo",
+    "forgot-password.confirm-password": "Potvrďte nové heslo",
+    "forgot-password.reset-password": "Obnoviť heslo",
 
     "no-account": "Nemáte účet?",
     "login": "Prihlásenie",
@@ -26,6 +35,10 @@
     "login-here": "Prihláste sa tu",
     "registered": "Úspešne ste sa zaregistrovali, pozrite si svoj e-mail pre overovací kód.",
     "save": "Uložiť",
+
+    "notfound.title": "Stránka sa nenašla",
+    "notfound.message": "Ospravedlňujeme sa, ale požadovaná stránka neexistuje alebo bola presunutá.",
+    "notfound.backHome": "Späť na úvod",
 
     "language": "Voľba jazyka",
     "toggle_theme": "Zmena farbeného motívu",

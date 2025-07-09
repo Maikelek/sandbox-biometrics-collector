@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
 
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -26,7 +27,7 @@ function App() {
     <BrowserRouter>
         <Routes>
 
-            <Route path="*" element={<Index />} />
+            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<ProtectedRoute> {<Index />} </ProtectedRoute>} />
 
             <Route path="/profile" element={<ProtectedRoute> {<Profile />} </ProtectedRoute>} />
