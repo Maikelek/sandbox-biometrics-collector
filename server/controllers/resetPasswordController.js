@@ -34,7 +34,6 @@ const requestPasswordReset = (req, res) => {
         }
 
         emailSender(email, 'Sandbox Biometrics Collector - Password Reset', `This is your verification code: ${resetCode}.\nEnter it and change your password. \n\nAdmin and Developer of SBC website`);
-        console.log(`Password reset code for ${email}: ${resetCode}`);
 
         return res.status(200).json({ message: "Reset code sent if email exists" });
       }

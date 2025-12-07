@@ -21,6 +21,7 @@
 
     "forgot-password" : "Zabudli ste heslo?",
     "forgot-password.title": "Zabudnuté heslo",
+    "forgot-password.send-code": "Poslať kód",
     "forgot-password.email-sent": "E-mail s odkazom na obnovenie hesla bol odoslaný na vašu e-mailovú adresu.",
     "forgot-password.code": "Overovací kód",
     "forgot-password.new-password": "Nové heslo",
@@ -123,6 +124,8 @@
     "admin.users.deletedSuccess": "Používateľ bol úspešne zmazaný.",
     "admin.users.confirmDeleteTitle": "Potvrdenie zmazania",
     "admin.problems.add": "Pridať novú výzvu",
+
+    "admin.testCases.title": "Upraviť Testy Výziev",
 
     "admin.users.editTitle": "Upraviť používateľa",
     "admin.users.email": "Email",

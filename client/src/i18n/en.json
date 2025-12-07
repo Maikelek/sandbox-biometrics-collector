@@ -21,6 +21,7 @@
 
     "forgot-password" : "Forgot your password?",
     "forgot-password.title": "Forgot Password",
+    "forgot-password.send-code": "Send code",
     "forgot-password.email-sent": "An email with a password reset link has been sent to your email address.",
     "forgot-password.code": "Authentication code",
     "forgot-password.new-password": "New password",
@@ -123,6 +124,8 @@
     "admin.users.deletedSuccess": "User has been successfully deleted.",
     "admin.users.confirmDeleteTitle": "Delete confirmation",
     "admin.problems.add": "Add new challenge",
+
+    "admin.testCases.title": "Edit Test Cases",
 
     "admin.users.editTitle": "Edit User",
     "admin.users.addTitle": "Add User",
