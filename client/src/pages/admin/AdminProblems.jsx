@@ -20,6 +20,9 @@ import {
   Snackbar,
   Alert,
   Button,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +40,9 @@ const difficultyColor = {
 const AdminProblems = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); 
+
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -53,6 +59,7 @@ const AdminProblems = () => {
     axios
       .get(`http://localhost:1234/admin/problems?page=${page}`, {
         withCredentials: true,
+        params: { limit },
       })
       .then((res) => {
         const { problems, total } = res.data;
@@ -68,7 +75,7 @@ const AdminProblems = () => {
         console.error('Error fetching problems:', err);
         setLoading(false);
       });
-  }, [page]);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchProblems();
@@ -109,18 +116,151 @@ const AdminProblems = () => {
     setTestCaseDialogOpen(true);
   };
 
+  const MobileProblemList = () => (
+    <Stack spacing={2}>
+      {problems.map((problem) => (
+        <Paper key={problem.id} elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+            <Typography variant="h6" fontWeight={600}>
+              {problem.name}
+            </Typography>
+            <Chip
+              label={t(`problems.levels.${problem.difficulty.toLowerCase()}`)}
+              color={difficultyColor[problem.difficulty.toLowerCase()] || 'default'}
+              size="small"
+              sx={{ ml: 1 }}
+            />
+          </Stack>
+          
+          <Divider sx={{ my: 1 }} />
+
+          <Box mb={2}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              {t('problems.tags')}:
+            </Typography>
+            {problem.tags.map((tag, index) => (
+              <Chip
+                key={index}
+                label={tag}
+                variant="outlined"
+                size="small"
+                sx={{ mr: 0.5, mb: 0.5 }}
+              />
+            ))}
+          </Box>
+          
+          <Box display="flex" justifyContent="flex-end">
+            <IconButton
+              aria-label="view-test-cases"
+              color="secondary"
+              onClick={() => handleViewTestCases(problem.id)}
+            >
+              <Visibility />
+            </IconButton>
+            <IconButton
+              aria-label="edit"
+              color="primary"
+              onClick={() => handleEdit(problem.id)}
+            >
+              <Edit />
+            </IconButton>
+            <IconButton
+              aria-label="delete"
+              color="error"
+              onClick={() => handleDelete(problem)}
+            >
+              <Delete />
+            </IconButton>
+          </Box>
+        </Paper>
+      ))}
+    </Stack>
+  );
+
+  const DesktopProblemTable = () => (
+    <Paper elevation={3} sx={{ overflowX: 'auto', width: '100%' }}>
+      <Table sx={{ minWidth: 700 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>#</TableCell>
+            <TableCell>{t('problems.name')}</TableCell>
+            <TableCell>{t('problems.difficulty')}</TableCell>
+            <TableCell>{t('problems.tags')}</TableCell>
+            <TableCell align="right">{t('problems.actions')}</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {problems.map((problem) => (
+            <TableRow key={problem.id} hover>
+              <TableCell>{problem.id}</TableCell>
+              <TableCell>{problem.name}</TableCell>
+              <TableCell>
+                <Chip
+                  label={t(`problems.levels.${problem.difficulty.toLowerCase()}`)}
+                  color={difficultyColor[problem.difficulty.toLowerCase()] || 'default'}
+                />
+              </TableCell>
+              <TableCell>
+                {problem.tags.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    variant="outlined"
+                    size="small"
+                    sx={{ mr: 0.5, mb: 0.5 }}
+                  />
+                ))}
+              </TableCell>
+              <TableCell align="right">
+                <IconButton
+                  aria-label="view-test-cases"
+                  color="secondary"
+                  onClick={() => handleViewTestCases(problem.id)}
+                >
+                  <Visibility />
+                </IconButton>
+                <IconButton
+                  aria-label="edit"
+                  color="primary"
+                  onClick={() => handleEdit(problem.id)}
+                >
+                  <Edit />
+                </IconButton>
+                <IconButton
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => handleDelete(problem)}
+                >
+                  <Delete />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+
   return (
     <>
       <AdminSidebar />
       <Box
         component="main"
         sx={{
-          ml: { xs: '72px', sm: '72px', md: '240px' },
+          ml: { xs: 0, md: '240px' }, 
           p: 3,
           minHeight: '100vh',
+          maxWidth: '100%', 
+          mx: 0,
+          px: { xs: 2, sm: 3, md: 3 },
+          pt: isMobile ? '70px' : '30px',
         }}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography 
+          variant="h4" 
+          gutterBottom
+          sx={{ textAlign: isMobile ? 'center' : 'left' }}
+        >
           {t('admin.problems.title')}
         </Typography>
 
@@ -136,70 +276,12 @@ const AdminProblems = () => {
         </Box>
 
         {loading ? (
-          <CircularProgress />
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
+          </Box>
         ) : (
           <>
-            <Paper elevation={3} sx={{ overflowX: 'auto' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>#</TableCell>
-                    <TableCell>{t('problems.name')}</TableCell>
-                    <TableCell>{t('problems.difficulty')}</TableCell>
-                    <TableCell>{t('problems.tags')}</TableCell>
-                    <TableCell align="right">{t('problems.actions')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {problems.map((problem) => (
-                    <TableRow key={problem.id}>
-                      <TableCell>{problem.id}</TableCell>
-                      <TableCell>{problem.name}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={t(`problems.levels.${problem.difficulty.toLowerCase()}`)}
-                          color={difficultyColor[problem.difficulty.toLowerCase()] || 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {problem.tags.map((tag, index) => (
-                          <Chip
-                            key={index}
-                            label={tag}
-                            variant="outlined"
-                            size="small"
-                            sx={{ mr: 0.5, mb: 0.5 }}
-                          />
-                        ))}
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          aria-label="view-test-cases"
-                          color="secondary"
-                          onClick={() => handleViewTestCases(problem.id)}
-                        >
-                          <Visibility />
-                        </IconButton>
-                        <IconButton
-                          aria-label="edit"
-                          color="primary"
-                          onClick={() => handleEdit(problem.id)}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          onClick={() => handleDelete(problem)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
+            {isMobile ? <MobileProblemList /> : <DesktopProblemTable />}
 
             <Stack spacing={2} sx={{ mt: 4 }} alignItems="center">
               <Pagination
@@ -209,6 +291,7 @@ const AdminProblems = () => {
                 color="primary"
                 showFirstButton
                 showLastButton
+                size={isMobile ? 'small' : 'medium'}
               />
             </Stack>
           </>

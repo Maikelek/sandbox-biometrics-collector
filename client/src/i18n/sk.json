@@ -138,6 +138,7 @@
     "admin.testCases.title": "Upraviť Testy Výziev",
 
     "admin.users.editTitle": "Upraviť používateľa",
+    "admin.users.addTitle": "Pridávanie Používateľa",
     "admin.users.email": "Email",
     "admin.users.isAdmin": "Je administrátor",
     "admin.users.isValid": "Overený účet",

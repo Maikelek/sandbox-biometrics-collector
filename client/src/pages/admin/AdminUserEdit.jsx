@@ -11,6 +11,9 @@ import {
   Alert,
   Paper,
   Divider,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +24,9 @@ const AdminUserEdit = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+
   const userId = location.pathname.split('/')[3];
   const isEditMode = userId && userId !== 'add';
 
@@ -30,6 +36,9 @@ const AdminUserEdit = () => {
     user_isAdmin: 0,
     user_isValid: 1,
     user_consent: 0,
+    user_id: isEditMode ? userId : null,
+    user_registration_date: null,
+    user_consent_change_date: null,
   });
 
   const [newPassword, setNewPassword] = useState('');
@@ -111,7 +120,14 @@ const AdminUserEdit = () => {
     return (
       <>
         <AdminSidebar />
-        <Box sx={{ ml: { xs: '72px', md: '240px' }, p: 3 }}>
+        <Box 
+          sx={{ 
+            ml: { xs: 0, md: '240px' }, 
+            p: 3, 
+            textAlign: 'center', 
+            pt: isDesktop ? 3 : 10,
+          }}
+        >
           <CircularProgress />
         </Box>
       </>
@@ -122,132 +138,165 @@ const AdminUserEdit = () => {
     <>
       <AdminSidebar />
       <Box
+        component="main"
         sx={{
-          ml: { xs: '72px', md: '240px' },
+          ml: { xs: 0, md: '240px' },
           p: 3,
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'center',
+          alignItems: 'flex-start',
           minHeight: '100vh',
+          maxWidth: '100%',
+          mx: 0, 
+          pt: isDesktop ? 3 : 10,
         }}
       >
-        <Paper elevation={3} sx={{ p: 3, maxWidth: 600, width: '100%' }}>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: { xs: 3, sm: 4, md: 5 },
+            maxWidth: 600, 
+            width: '100%',
+            mt: isDesktop ? 2 : 0, 
+          }}
+        >
           <Typography variant="h4" gutterBottom align="center">
             {isEditMode ? t('admin.users.editTitle') : t('admin.users.addTitle')}
           </Typography>
+          
+          <Stack spacing={2} sx={{ mt: 3 }}>
+            {isEditMode && (
+              <TextField
+                fullWidth
+                label="ID"
+                name="user_id"
+                value={user.user_id}
+                disabled
+              />
+            )}
 
-          {isEditMode && (
             <TextField
               fullWidth
-              label="ID"
-              name="user_id"
-              value={user.user_id}
-              disabled
-              sx={{ mb: 2 }}
+              label={t('admin.users.email')}
+              name="user_email"
+              value={user.user_email}
+              onChange={handleChange}
+              error={Boolean(errors.user_email)}
+              helperText={errors.user_email}
             />
-          )}
 
-          <TextField
-            fullWidth
-            label={t('admin.users.email')}
-            name="user_email"
-            value={user.user_email}
-            onChange={handleChange}
-            error={Boolean(errors.user_email)}
-            helperText={errors.user_email}
-            sx={{ mb: 2 }}
-          />
+            <TextField
+              fullWidth
+              label={t('admin.users.name')}
+              name="user_name"
+              value={user.user_name}
+              onChange={handleChange}
+              error={Boolean(errors.user_name)}
+              helperText={errors.user_name}
+            />
 
-          <TextField
-            fullWidth
-            label={t('admin.users.name')}
-            name="user_name"
-            value={user.user_name}
-            onChange={handleChange}
-            error={Boolean(errors.user_name)}
-            helperText={errors.user_name}
-            sx={{ mb: 2 }}
-          />
+            <Divider sx={{ my: 1 }} />
 
-          <Divider sx={{ my: 2 }} />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={user.user_isAdmin === 1}
+                  onChange={handleCheckboxChange}
+                  name="user_isAdmin"
+                />
+              }
+              label={t('admin.users.isAdmin')}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={user.user_isValid === 1}
+                  onChange={handleCheckboxChange}
+                  name="user_isValid"
+                />
+              }
+              label={t('admin.users.isValid')}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={user.user_consent === 1}
+                  onChange={handleCheckboxChange}
+                  name="user_consent"
+                />
+              }
+              label={t('admin.users.consent')}
+            />
 
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={user.user_isAdmin === 1}
-                onChange={handleCheckboxChange}
-                name="user_isAdmin"
-              />
-            }
-            label={t('admin.users.isAdmin')}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={user.user_isValid === 1}
-                onChange={handleCheckboxChange}
-                name="user_isValid"
-              />
-            }
-            label={t('admin.users.isValid')}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={user.user_consent === 1}
-                onChange={handleCheckboxChange}
-                name="user_consent"
-              />
-            }
-            label={t('admin.users.consent')}
-          />
+            <Divider sx={{ my: 1 }} />
 
-          <Divider sx={{ my: 2 }} />
+            <TextField
+              fullWidth
+              type="password"
+              label={t('admin.users.newPassword')}
+              name="newPassword"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setErrors((prev) => ({ ...prev, newPassword: '' }));
+              }}
+              error={Boolean(errors.newPassword)}
+              helperText={errors.newPassword || t('admin.users.leaveBlankToKeep')}
+            />
 
-          <TextField
-            fullWidth
-            type="password"
-            label={t('admin.users.newPassword')}
-            name="newPassword"
-            value={newPassword}
-            onChange={(e) => {
-              setNewPassword(e.target.value);
-              setErrors((prev) => ({ ...prev, newPassword: '' }));
-            }}
-            error={Boolean(errors.newPassword)}
-            helperText={errors.newPassword || t('admin.users.leaveBlankToKeep')}
-            sx={{ mb: 2 }}
-          />
-
-          {isEditMode && (
-            <>
-              <TextField
-                fullWidth
-                label={t('admin.users.registrationDate')}
-                name="user_registration_date"
-                value={new Date(user.user_registration_date).toLocaleString()}
-                disabled
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                fullWidth
-                label={t('admin.users.consentChangeDate')}
-                name="user_consent_change_date"
-                value={new Date(user.user_consent_change_date).toLocaleString()}
-                disabled
-                sx={{ mb: 2 }}
-              />
-            </>
-          )}
-
-          <Box mt={2} display="flex" justifyContent="center">
-            <Button variant="contained" color="primary" onClick={handleSave}>
+            {isEditMode && (
+              <>
+                <TextField
+                  fullWidth
+                  label={t('admin.users.registrationDate')}
+                  name="user_registration_date"
+                  value={user.user_registration_date ? new Date(user.user_registration_date).toLocaleString() : t('n/a')}
+                  disabled
+                />
+                <TextField
+                  fullWidth
+                  label={t('admin.users.consentChangeDate')}
+                  name="user_consent_change_date"
+                  value={user.user_consent_change_date ? new Date(user.user_consent_change_date).toLocaleString() : t('n/a')}
+                  disabled
+                />
+              </>
+            )}
+          </Stack>
+          
+          <Stack 
+            direction="row" 
+            spacing={2} 
+            justifyContent="center" 
+            flexWrap="wrap" 
+            sx={{ mt: 4 }}
+          >
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={handleSave}
+              size="large"
+              sx={{ 
+                px: 4,
+                mb: { xs: 2, sm: 0 },
+                minWidth: '120px', 
+              }}
+            >
               {t('save')}
             </Button>
-            <Button sx={{ ml: 2 }} onClick={() => navigate('/admin/users')}>
+            <Button 
+              variant="outlined"
+              onClick={() => navigate('/admin/users')}
+              size="large"
+              sx={{ 
+                px: 4,
+                minWidth: '120px', 
+              }}
+            >
               {t('cancel')}
             </Button>
-          </Box>
+          </Stack>
+
         </Paper>
       </Box>
 

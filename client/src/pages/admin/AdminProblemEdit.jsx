@@ -17,6 +17,7 @@ import {
   Chip,
   useTheme,
   Autocomplete,
+  useMediaQuery,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +36,7 @@ const AdminProblemEdit = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const problemId = location.pathname.split("/")[3];
   const isEditMode = problemId && problemId !== 'add';
@@ -65,25 +67,30 @@ const AdminProblemEdit = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    const fetchTags = axios.get(`http://localhost:1234/admin/tags`, { withCredentials: true })
+      .then(res => res.data || [])
+      .catch(err => {
+        console.error('Error fetching tags:', err);
+        return [];
+      });
+
     if (!isEditMode) {
       setLoading(false);
-      axios.get(`http://localhost:1234/admin/tags`, { withCredentials: true })
-        .then(res => setTags(res.data || []))
-        .catch(err => console.error('Error fetching tags:', err));
+      fetchTags.then(setTags);
       return;
     }
 
     setLoading(true);
-    axios
-      .get(`http://localhost:1234/admin/problem/${problemId}`, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        setProblem(res.data.problem || res.data);
-        setTags(res.data.allTags || []);
+    Promise.all([
+      axios.get(`http://localhost:1234/admin/problem/${problemId}`, { withCredentials: true }),
+      fetchTags
+    ])
+      .then(([problemRes, allTags]) => {
+        setProblem(problemRes.data.problem || problemRes.data);
+        setTags(allTags);
       })
       .catch((err) => {
-        console.error('Error fetching problem:', err);
+        console.error('Error fetching data:', err);
       })
       .finally(() => setLoading(false));
   }, [isEditMode, problemId]);
@@ -135,23 +142,16 @@ const AdminProblemEdit = () => {
       .finally(() => setSaving(false));
   };
 
-  if (loading) {
-    return (
-      <>
-        <AdminSidebar />
-        <Box sx={{ ml: { xs: '72px', md: '240px' }, p: 3, textAlign: 'center' }}>
-          <CircularProgress />
-        </Box>
-      </>
-    );
-  }
-
   const selectedTags = problem.problem_tags
     ? problem.problem_tags.split(',').map((tag) => tag.trim()).filter(Boolean)
     : [];
 
   const renderMonacoEditor = (language, valueKey) => (
-    <Box>
+    <Box 
+      sx={{ 
+        width: isDesktop ? 'calc(33.333% - 16px)' : '100%', 
+      }}
+    >
       <Typography variant="subtitle1" sx={{ mb: 1 }}>
         {language.toUpperCase()}
       </Typography>
@@ -171,21 +171,60 @@ const AdminProblemEdit = () => {
     </Box>
   );
 
+  if (loading) {
+    return (
+      <>
+        <AdminSidebar />
+        <Box 
+          sx={{ 
+            ml: { xs: 0, md: '240px' }, 
+            p: 3, 
+            textAlign: 'center', 
+            minHeight: '100vh',
+            pt: isDesktop ? 3 : 10,
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </>
+    );
+  }
+
   return (
     <>
       <AdminSidebar />
       <Box
+        component="main"
         sx={{
-          ml: { xs: '72px', md: '240px' },
+          ml: { xs: 0, md: '240px' },
           p: 3,
           display: 'flex',
           justifyContent: 'center',
           backgroundColor: theme.palette.background.default,
           minHeight: '100vh',
+          maxWidth: '100%',
+          mx: 0,
+          pt: isDesktop ? 3 : 10,
         }}
       >
-        <Paper elevation={4} sx={{ p: 5, maxWidth: 1000, width: '100%', borderRadius: 4 }}>
-          <Typography variant="h4" align="center" gutterBottom fontWeight={600} color="primary">
+        <Paper 
+          elevation={4} 
+          sx={{ 
+            p: { xs: 2, sm: 3, md: 5 },
+            maxWidth: 1000, 
+            width: '100%', 
+            borderRadius: 4,
+            mt: isDesktop ? 0 : 2,
+          }}
+        >
+          <Typography 
+            variant="h4" 
+            align="center" 
+            gutterBottom 
+            fontWeight={600} 
+            color="primary"
+            sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+          >
             {isEditMode ? t('admin.problems.editTitle') : t('admin.problems.addTitle')}
           </Typography>
 
@@ -322,7 +361,13 @@ const AdminProblemEdit = () => {
               {t('admin.problems.starterCode')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Stack spacing={3}>
+            <Stack 
+                spacing={3} 
+                direction={isDesktop ? "row" : "column"} 
+                useFlexGap 
+                flexWrap="wrap"
+                justifyContent="space-between"
+            >
               {renderMonacoEditor('python', 'starter_code_py')}
               {renderMonacoEditor('java', 'starter_code_java')}
               {renderMonacoEditor('c', 'starter_code_c')}
@@ -357,11 +402,11 @@ const AdminProblemEdit = () => {
             />
           </Box>
 
-          <Stack direction="row" spacing={2} justifyContent="center">
+          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
               variant="contained"
               size="large"
-              sx={{ px: 4 }}
+              sx={{ px: 4, mb: { xs: 2, sm: 0 } }}
               onClick={handleSave}
               disabled={saving}
             >

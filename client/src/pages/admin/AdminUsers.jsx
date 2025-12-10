@@ -20,8 +20,10 @@ import {
   Snackbar,
   Alert,
   Button,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete, Person, VerifiedUser } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +32,9 @@ import AdminSidebar from '../../components/AdminSidebar';
 const AdminUsers = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -100,18 +105,110 @@ const AdminUsers = () => {
       });
   };
 
+  const MobileUserList = () => (
+    <Stack spacing={2}>
+      {users.map((user) => (
+        <Paper key={user.id} elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight={600}>
+              {user.name}
+            </Typography>
+            <Chip
+              label={t(`${user.role}`)}
+              icon={user.role === 'admin' ? <VerifiedUser fontSize="small" /> : <Person fontSize="small" />}
+              color={user.role === 'admin' ? 'error' : 'primary'}
+              size="small"
+              sx={{ ml: 1 }}
+            />
+          </Box>
+          <Box display="flex" justifyContent="flex-end" mt={2}>
+            <IconButton
+              aria-label="edit"
+              color="primary"
+              onClick={() => handleEdit(user.id)}
+            >
+              <Edit />
+            </IconButton>
+            <IconButton
+              aria-label="delete"
+              color="error"
+              onClick={() => handleDelete(user)}
+            >
+              <Delete />
+            </IconButton>
+          </Box>
+        </Paper>
+      ))}
+    </Stack>
+  );
+
+  const DesktopUserTable = () => (
+    <Paper elevation={3} sx={{ overflowX: 'auto', width: '100%' }}>
+      <Table sx={{ minWidth: 650 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>#</TableCell>
+            <TableCell>{t('admin.users.name')}</TableCell>
+            <TableCell>{t('role')}</TableCell>
+            <TableCell align="right">{t('problems.actions')}</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id} hover>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>
+                <Chip
+                  label={t(`${user.role}`)}
+                  color={user.role === 'admin' ? 'error' : 'primary'}
+                  variant="outlined"
+                  size="small"
+                />
+              </TableCell>
+              <TableCell align="right">
+                <IconButton
+                  aria-label="edit"
+                  color="primary"
+                  onClick={() => handleEdit(user.id)}
+                >
+                  <Edit />
+                </IconButton>
+                <IconButton
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => handleDelete(user)}
+                >
+                  <Delete />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+
   return (
     <>
       <AdminSidebar />
       <Box
         component="main"
         sx={{
-          ml: { xs: '72px', sm: '72px', md: '240px' },
+          ml: { xs: 0, md: '240px' },
           p: 3,
           minHeight: '100vh',
+          maxWidth: '100%',
+          mx: 0,
+          px: { xs: 2, sm: 3, md: 3 },
+          pt: isMobile ? '70px' : '30px',
         }}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ textAlign: isMobile ? 'center' : 'left' }}
+        >
           {t('admin.users.title')}
         </Typography>
 
@@ -126,51 +223,12 @@ const AdminUsers = () => {
         </Box>
 
         {loading ? (
-          <CircularProgress />
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
+          </Box>
         ) : (
           <>
-            <Paper elevation={3} sx={{ overflowX: 'auto' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>#</TableCell>
-                    <TableCell>{t('admin.users.name')}</TableCell>
-                    <TableCell>{t('role')}</TableCell>
-                    <TableCell align="right">{t('problems.actions')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.id}</TableCell>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={t(`${user.role}`)}
-                          color={user.role === 'admin' ? 'error' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          aria-label="edit"
-                          color="primary"
-                          onClick={() => handleEdit(user.id)}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          onClick={() => handleDelete(user)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
+            {isMobile ? <MobileUserList /> : <DesktopUserTable />}
 
             <Stack spacing={2} sx={{ mt: 4 }} alignItems="center">
               <Pagination
@@ -180,6 +238,7 @@ const AdminUsers = () => {
                 color="primary"
                 showFirstButton
                 showLastButton
+                size={isMobile ? 'small' : 'medium'}
               />
             </Stack>
           </>
