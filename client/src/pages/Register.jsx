@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -16,11 +16,12 @@ import {
   DialogContentText,
   DialogActions,
   Divider,
-  Alert
+  Alert,
+  Container,
 } from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { Brightness4, Brightness7, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useThemeContext } from '../context/ThemeContext'; 
+import { useThemeContext } from '../context/ThemeContext';
 import '../i18n';
 
 const Register = () => {
@@ -42,6 +43,17 @@ const Register = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scroll, setScroll] = useState('paper');
   const [showAlert, setShowAlert] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false); 
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false); 
+
+  const allFieldsFilled = useMemo(() => {
+    return formData.name.trim() !== '' &&
+           formData.email.trim() !== '' &&
+           formData.password !== '' &&
+           formData.passwordRepeat !== '';
+  }, [formData]);
+
 
   const handleLangChange = (_, lang) => lang && i18n.changeLanguage(lang);
 
@@ -76,13 +88,17 @@ const Register = () => {
 
   const handleSubmit = async () => {
     const validationErrors = validate();
-    if (!consent) setShowAlert(true);
-    else setShowAlert(false);
+    
+    if (!consent) {
+      setShowAlert(true);
+    }
 
-    if (Object.keys(validationErrors).length > 0) {
+    if (!consent || Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+    
+    setShowAlert(false);
 
     try {
       const res = await axios.post("http://localhost:1234/register", {
@@ -129,18 +145,46 @@ const Register = () => {
 
   return (
     <>
-      <div className="top-bar">
-        <ToggleButtonGroup value={i18n.language} exclusive onChange={handleLangChange}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          p: 1, 
+          width: '100%',
+        }}
+      >
+        <ToggleButtonGroup value={i18n.language} exclusive onChange={handleLangChange} size="small">
           <ToggleButton value="en">EN</ToggleButton>
           <ToggleButton value="sk">SK</ToggleButton>
         </ToggleButtonGroup>
-        <IconButton onClick={toggleTheme}>
+        <IconButton onClick={toggleTheme} color="inherit" sx={{ ml: 1 }}>
           {themeMode === 'dark' ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
-      </div>
+      </Box>
 
-      <div className="holder-sign">
-        <Paper elevation={6} className="register-form" sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+      <Container
+        component="main"
+        maxWidth="sm"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 50px)', 
+          py: { xs: 2, sm: 4 }, 
+          px: 2,
+        }}
+      >
+        <Paper
+          elevation={6}
+          sx={{
+            p: { xs: 3, md: 5 }, 
+            width: '100%',
+            maxWidth: 500, 
+            boxSizing: 'border-box',
+          }}
+        >
           <Typography variant="h4" gutterBottom align="center">
             {t('register')}
           </Typography>
@@ -180,36 +224,57 @@ const Register = () => {
           <TextField
             label={t('password')}
             name="password"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             fullWidth
             margin="normal"
             value={formData.password}
             onChange={handleChange}
             error={Boolean(errors.password)}
             helperText={errors.password}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              ),
+            }}
           />
           <TextField
             label={t('password-repeat')}
             name="passwordRepeat"
-            type="password"
+            type={showRepeatPassword ? 'text' : 'password'}
             fullWidth
             margin="normal"
             value={formData.passwordRepeat}
             onChange={handleChange}
             error={Boolean(errors.passwordRepeat)}
             helperText={errors.passwordRepeat}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                  edge="end"
+                >
+                  {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              ),
+            }}
           />
 
           <Button variant="outlined" onClick={handleDialogOpen} sx={{ mt: 2 }} fullWidth>
-            {t('show-biometric-terms')}
+            {t('show-biometric-terms')} {consent && '(✅)'}
           </Button>
 
           <Button
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, mb: 1 }}
             onClick={handleSubmit}
+            disabled={!consent || !allFieldsFilled} 
           >
             {t('submit')}
           </Button>
@@ -217,13 +282,13 @@ const Register = () => {
           <Box mt={2} textAlign="center">
             <Typography variant="body2">
               {t('have-account')}{' '}
-              <Button variant="text" onClick={() => navigate('/login')}>
+              <Button variant="text" onClick={() => navigate('/login')} size="small">
                 {t('login-here')}
               </Button>
             </Typography>
           </Box>
         </Paper>
-      </div>
+      </Container>
 
       <Dialog
         open={dialogOpen}
@@ -231,6 +296,8 @@ const Register = () => {
         scroll={scroll}
         aria-labelledby="scroll-dialog-title"
         aria-describedby="scroll-dialog-description"
+        fullWidth
+        maxWidth="sm"
       >
         <DialogTitle id="scroll-dialog-title">
           {t('biometric-consent-title')}
@@ -258,7 +325,7 @@ const Register = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>{t('cancel')}</Button>
-          <Button onClick={handleAgree}>{t('agree')}</Button>
+          <Button onClick={handleAgree} variant="contained">{t('agree')}</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -27,6 +27,7 @@
     "forgot-password.new-password": "Nové heslo",
     "forgot-password.confirm-password": "Potvrďte nové heslo",
     "forgot-password.reset-password": "Obnoviť heslo",
+    "forgot-password.password-changed": "Heslo bolo úspešne zmenené",
 
     "no-account": "Nemáte účet?",
     "login": "Prihlásenie",
@@ -88,6 +89,7 @@
     "problems.status": "Status",
     "problems.status_solved": "Vyriešené",
     "problems.status_unsolved": "Nevyriešené",
+    "problems.no_tags": "Úlohá nemá tagy",
     "problems.actions": "Možnosti",
     "problems.solve": "Riešiť",
     "problems.levels": {
@@ -111,6 +113,14 @@
     "editor.noOutput": "Žiadny výstup",
     "editor.expected": "Očakávaný výstup",
     "editor.result": "Výsledok",
+    "editor.code": "Editor",
+    "editor.executionResults": "Výsledok",
+    "editor.testCase": "Test",
+    "editor.failed": "Chyba",
+    "editor.passed": "Správne",
+    "editor.someTestsFailed": "Nejaké Testy Neprešli",
+    "editor.allTestsPassed": "Všetky Testy Prešli",
+    "editor.failedToLoadProblem": "Táto úloha neexistuje",
 
     "admin.problems.confirmDeleteTitle": "Potvrdenie zmazania",
     "admin.problems.confirmDeleteMessage": "Naozaj chcete zmazať problém '{{name}}'?",

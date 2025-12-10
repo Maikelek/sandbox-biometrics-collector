@@ -27,6 +27,7 @@
     "forgot-password.new-password": "New password",
     "forgot-password.confirm-password": "Confirm new password",
     "forgot-password.reset-password": "Reset Password",
+    "forgot-password.password-changed": "Password was successfully changed",
 
     "no-account": "Don't have an account?",
     "login": "Login",
@@ -85,6 +86,7 @@
     "problems.name": "Name",
     "problems.difficulty": "Difficulty",
     "problems.tags": "Tags",
+    "problems.no_tags": "Challenge does't have tags",
     "problems.status": "Status",
     "problems.status_solved": "Solved",
     "problems.status_unsolved": "Unsolved",
@@ -111,6 +113,15 @@
     "editor.noOutput": "No output",
     "editor.expected": "Expected output",
     "editor.result": "Result",
+    "editor.code": "Editor",
+    "editor.executionResults": "Results",
+    "editor.testCase": "Test Case",
+    "editor.failed": "Failed",
+    "editor.passed": "Passed",
+    "editor.someTestsFailed": "Some Tests Failed",
+    "editor.allTestsPassed": "All Tests Passed",
+    "editor.failedToLoadProblem": "This challenge does't exist",
+    
 
     "admin.problems.confirmDeleteTitle": "Confirm deletion",
     "admin.problems.confirmDeleteMessage": "Are you sure you want to delete problem '{{name}}'?",
