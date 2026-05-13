@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -22,50 +22,106 @@ import {
   Button,
   useMediaQuery,
   useTheme,
+  Tooltip,
+  Divider,
 } from '@mui/material';
-import { Edit, Delete, Person, VerifiedUser } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
+import {
+  Edit,
+  Delete,
+  Person,
+  VerifiedUser,
+  Assessment,
+  Add,
+  Refresh,
+  People,
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+
 import AdminSidebar from '../../components/AdminSidebar';
+
+const limit = 8;
 
 const AdminUsers = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
+
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isDarkMode = theme.palette.mode === 'dark';
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const limit = 8;
+
+  const apiBase = useMemo(() => {
+    return window.location.hostname === 'localhost'
+      ? 'http://localhost:1234'
+      : '/api';
+  }, []);
+
+  const cardSx = {
+    borderRadius: 2.5,
+    backgroundColor: isDarkMode ? '#171a22' : '#ffffff',
+    border: `1px solid ${isDarkMode ? alpha('#ffffff', 0.1) : '#e5e7eb'}`,
+    boxShadow: 'none',
+  };
+
+  const normalizeUser = (user) => {
+    const id = user.id || user.user_id;
+    const name = user.name || user.user_name || '—';
+    const isAdmin = user.isAdmin ?? user.user_isAdmin ?? 0;
+
+    return {
+      ...user,
+      id,
+      name,
+      isAdmin,
+      role: Number(isAdmin) === 1 ? 'admin' : 'user',
+    };
+  };
 
   const fetchUsers = useCallback(() => {
     setLoading(true);
+    setError('');
+
     axios
-      .get(`http://localhost:1234/admin/users?page=${page}`, {
+      .get(`${apiBase}/admin/users`, {
         withCredentials: true,
-        params: { limit },
+        params: {
+          page,
+          limit,
+        },
       })
       .then((res) => {
-        const { users, total } = res.data;
-        const mappedUsers = users.map((user) => ({
-          ...user,
-          role: user.isAdmin ? 'admin' : 'user',
-        }));
+        const { users: loadedUsers = [], total = 0 } = res.data;
+
+        const mappedUsers = loadedUsers.map(normalizeUser);
+
         setUsers(mappedUsers);
-        setTotalPages(Math.ceil(total / limit));
-        setLoading(false);
+        setTotalPages(Math.max(Math.ceil((total || 0) / limit), 1));
       })
       .catch((err) => {
         console.error('Error fetching users:', err);
+        setError(
+          t('admin.users.loadError', {
+            defaultValue: 'Nepodarilo sa načítať používateľov.',
+          })
+        );
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, [page]);
+  }, [apiBase, page, t]);
 
   useEffect(() => {
     fetchUsers();
@@ -79,6 +135,10 @@ const AdminUsers = () => {
     navigate(`/admin/user/${userId}`);
   };
 
+  const handleViewBiometrics = (userId) => {
+    navigate(`/admin/user/${userId}/biometrics`);
+  };
+
   const handleAddUser = () => {
     navigate('/admin/user/add');
   };
@@ -88,62 +148,117 @@ const AdminUsers = () => {
     setDeleteDialogOpen(true);
   };
 
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedUser(null);
+  };
+
   const confirmDelete = () => {
+    if (!selectedUser) return;
+
     axios
-      .delete(`http://localhost:1234/admin/users`, {
+      .delete(`${apiBase}/admin/users`, {
         withCredentials: true,
-        data: { id: selectedUser.id },
+        data: {
+          id: selectedUser.id,
+        },
       })
       .then(() => {
         setSnackbarOpen(true);
         setDeleteDialogOpen(false);
+        setSelectedUser(null);
         fetchUsers();
       })
       .catch((err) => {
         console.error('Error deleting user:', err);
+        setError(
+          t('admin.users.deleteError', {
+            defaultValue: 'Nepodarilo sa vymazať používateľa.',
+          })
+        );
         setDeleteDialogOpen(false);
       });
   };
 
+  const RoleChip = ({ role }) => (
+    <Chip
+      label={t(role)}
+      icon={
+        role === 'admin' ? (
+          <VerifiedUser fontSize="small" />
+        ) : (
+          <Person fontSize="small" />
+        )
+      }
+      color={role === 'admin' ? 'error' : 'primary'}
+      variant="outlined"
+      size="small"
+      sx={{ fontWeight: 700 }}
+    />
+  );
+
+  const Actions = ({ user }) => (
+    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+      <Tooltip title={t('admin.users.viewBiometrics')}>
+        <IconButton
+          aria-label="biometrics"
+          color="info"
+          onClick={() => handleViewBiometrics(user.id)}
+        >
+          <Assessment />
+        </IconButton>
+      </Tooltip>
+
+      <Tooltip title={t('admin.users.edit')}>
+        <IconButton
+          aria-label="edit"
+          color="primary"
+          onClick={() => handleEdit(user.id)}
+        >
+          <Edit />
+        </IconButton>
+      </Tooltip>
+
+      <Tooltip title={t('admin.users.delete')}>
+        <IconButton
+          aria-label="delete"
+          color="error"
+          onClick={() => handleDelete(user)}
+        >
+          <Delete />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  );
+
   const MobileUserList = () => (
     <Stack spacing={2}>
       {users.map((user) => (
-        <Paper key={user.id} elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" fontWeight={600}>
-              {user.name}
-            </Typography>
-            <Chip
-              label={t(`${user.role}`)}
-              icon={user.role === 'admin' ? <VerifiedUser fontSize="small" /> : <Person fontSize="small" />}
-              color={user.role === 'admin' ? 'error' : 'primary'}
-              size="small"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          <Box display="flex" justifyContent="flex-end" mt={2}>
-            <IconButton
-              aria-label="edit"
-              color="primary"
-              onClick={() => handleEdit(user.id)}
-            >
-              <Edit />
-            </IconButton>
-            <IconButton
-              aria-label="delete"
-              color="error"
-              onClick={() => handleDelete(user)}
-            >
-              <Delete />
-            </IconButton>
-          </Box>
+        <Paper key={user.id} elevation={0} sx={{ ...cardSx, p: 2 }}>
+          <Stack direction="row" justifyContent="space-between" spacing={2}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 750 }}>
+                {user.name}
+              </Typography>
+
+              <Typography variant="caption" color="text.secondary">
+                ID: {user.id}
+              </Typography>
+            </Box>
+
+            <RoleChip role={user.role} />
+          </Stack>
+
+          <Divider sx={{ my: 1.5 }} />
+
+          <Actions user={user} />
         </Paper>
       ))}
     </Stack>
   );
 
   const DesktopUserTable = () => (
-    <Paper elevation={3} sx={{ overflowX: 'auto', width: '100%' }}>
+    <Paper elevation={0} sx={{ ...cardSx, overflowX: 'auto', width: '100%' }}>
       <Table sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
@@ -153,34 +268,28 @@ const AdminUsers = () => {
             <TableCell align="right">{t('problems.actions')}</TableCell>
           </TableRow>
         </TableHead>
+
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id} hover>
-              <TableCell>{user.id}</TableCell>
-              <TableCell>{user.name}</TableCell>
               <TableCell>
-                <Chip
-                  label={t(`${user.role}`)}
-                  color={user.role === 'admin' ? 'error' : 'primary'}
-                  variant="outlined"
-                  size="small"
-                />
+                <Typography variant="body2" color="text.secondary">
+                  {user.id}
+                </Typography>
               </TableCell>
+
+              <TableCell>
+                <Typography sx={{ fontWeight: 700 }}>
+                  {user.name}
+                </Typography>
+              </TableCell>
+
+              <TableCell>
+                <RoleChip role={user.role} />
+              </TableCell>
+
               <TableCell align="right">
-                <IconButton
-                  aria-label="edit"
-                  color="primary"
-                  onClick={() => handleEdit(user.id)}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  aria-label="delete"
-                  color="error"
-                  onClick={() => handleDelete(user)}
-                >
-                  <Delete />
-                </IconButton>
+                <Actions user={user} />
               </TableCell>
             </TableRow>
           ))}
@@ -192,94 +301,206 @@ const AdminUsers = () => {
   return (
     <>
       <AdminSidebar />
+
       <Box
         component="main"
         sx={{
           ml: { xs: 0, md: '240px' },
-          p: 3,
           minHeight: '100vh',
-          maxWidth: '100%',
-          mx: 0,
-          px: { xs: 2, sm: 3, md: 3 },
-          pt: isMobile ? '70px' : '30px',
+          backgroundColor: isDarkMode ? '#0f1117' : '#f6f7fb',
+          px: { xs: 2, sm: 3, md: 4 },
+          py: 3,
+          pt: isMobile ? '76px' : 4,
         }}
       >
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ textAlign: isMobile ? 'center' : 'left' }}
-        >
-          {t('admin.users.title')}
-        </Typography>
-
-        <Box display="flex" justifyContent="flex-end" mb={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddUser}
+        <Box sx={{ width: '100%', maxWidth: 1100, mx: 'auto' }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+            spacing={2}
+            sx={{ mb: 3 }}
           >
-            {t('admin.users.addUser')}
-          </Button>
-        </Box>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 750,
+                  letterSpacing: '-0.035em',
+                  color: isDarkMode ? '#fff' : '#111827',
+                  textAlign: { xs: 'center', sm: 'left' },
+                }}
+              >
+                {t('admin.users.title')}
+              </Typography>
 
-        {loading ? (
-          <Box display="flex" justifyContent="center" mt={4}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            {isMobile ? <MobileUserList /> : <DesktopUserTable />}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5, textAlign: { xs: 'center', sm: 'left' } }}
+              >
+                {t('admin.users.subtitle', {
+                  defaultValue: 'Správa používateľov a ich rolí.',
+                })}
+              </Typography>
+            </Box>
 
-            <Stack spacing={2} sx={{ mt: 4 }} alignItems="center">
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                showFirstButton
-                showLastButton
-                size={isMobile ? 'small' : 'medium'}
-              />
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent={{ xs: 'center', sm: 'flex-end' }}
+            >
+              <Button
+                variant="outlined"
+                startIcon={<Refresh />}
+                onClick={fetchUsers}
+                disabled={loading}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 650,
+                }}
+              >
+                {t('admin.dashboard.refresh', {
+                  defaultValue: 'Obnoviť',
+                })}
+              </Button>
+
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddUser}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 650,
+                }}
+              >
+                {t('admin.users.addUser')}
+              </Button>
             </Stack>
-          </>
-        )}
+          </Stack>
 
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>{t('admin.users.confirmDeleteTitle')}</DialogTitle>
-          <DialogContent>
-            <Typography>
-              {t('admin.users.confirmDeleteMessage', {
-                name: selectedUser?.name,
-              })}
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={confirmDelete} color="error">
-              {t('delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={4000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity="success"
-            sx={{ width: '100%' }}
+          {loading ? (
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight="50vh"
+            >
+              <CircularProgress />
+            </Box>
+          ) : users.length === 0 ? (
+            <Paper elevation={0} sx={{ ...cardSx, p: 4, textAlign: 'center' }}>
+              <People sx={{ fontSize: 42, color: 'text.secondary', mb: 1 }} />
+
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {t('admin.users.emptyTitle', {
+                  defaultValue: 'Zatiaľ tu nie sú žiadni používatelia',
+                })}
+              </Typography>
+
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('admin.users.emptyText', {
+                  defaultValue:
+                    'Po vytvorení používateľov sa zobrazia v tomto zozname.',
+                })}
+              </Typography>
+
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddUser}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 650,
+                }}
+              >
+                {t('admin.users.addUser')}
+              </Button>
+            </Paper>
+          ) : (
+            <>
+              {isMobile ? <MobileUserList /> : <DesktopUserTable />}
+
+              <Stack spacing={2} sx={{ mt: 3 }} alignItems="center">
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  showFirstButton
+                  showLastButton
+                  size={isMobile ? 'small' : 'medium'}
+                />
+              </Stack>
+            </>
+          )}
+
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={handleCloseDeleteDialog}
+            maxWidth="xs"
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+              },
+            }}
           >
-            {t('admin.users.deletedSuccess')}
-          </Alert>
-        </Snackbar>
+            <DialogTitle sx={{ fontWeight: 750 }}>
+              {t('admin.users.confirmDeleteTitle')}
+            </DialogTitle>
+
+            <DialogContent>
+              <Typography>
+                {t('admin.users.confirmDeleteMessage', {
+                  name: selectedUser?.name,
+                })}
+              </Typography>
+            </DialogContent>
+
+            <DialogActions sx={{ px: 3, pb: 3 }}>
+              <Button
+                onClick={handleCloseDeleteDialog}
+                sx={{ textTransform: 'none', fontWeight: 650 }}
+              >
+                {t('cancel')}
+              </Button>
+
+              <Button
+                onClick={confirmDelete}
+                color="error"
+                variant="contained"
+                sx={{ textTransform: 'none', fontWeight: 650 }}
+              >
+                {t('delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={4000}
+            onClose={() => setSnackbarOpen(false)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert
+              onClose={() => setSnackbarOpen(false)}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              {t('admin.users.deletedSuccess')}
+            </Alert>
+          </Snackbar>
+        </Box>
       </Box>
     </>
   );

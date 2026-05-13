@@ -1,34 +1,45 @@
 const express = require('express');
-const router = express.Router(); 
+const router = express.Router();
+
 const adminProblemController = require('../controllers/adminProblemController');
 const adminUserController = require('../controllers/adminUserController');
-const {isAdmin} = require('../middleware/protector');
+const adminFlaggedSubmissionController = require('../controllers/adminFlaggedSubmissionController');
 
-router.route("/users")  
-    .get(isAdmin, adminUserController.getAllUsers)
-    .post(isAdmin, adminUserController.addUser)
-    .delete(isAdmin, adminUserController.deleteUser);
+const { isAdmin } = require('../middleware/protector');
 
-router.route("/user/:id")  
-    .get(isAdmin, adminUserController.getUserById)
-    .put(isAdmin, adminUserController.updateUser);
+router.route('/users')
+  .get(isAdmin, adminUserController.getAllUsers)
+  .post(isAdmin, adminUserController.addUser)
+  .delete(isAdmin, adminUserController.deleteUser);
 
-router.route("/problems")  
-    .get(isAdmin, adminProblemController.getAllProblems)
-    .post(isAdmin, adminProblemController.addProblem)
-    .delete(isAdmin, adminProblemController.deleteProblem);
+router.route('/user/:id')
+  .get(isAdmin, adminUserController.getUserById)
+  .put(isAdmin, adminUserController.updateUser);
 
-router.route("/tags")  
-    .get(isAdmin, adminProblemController.getAllTags)
+router.route('/user/:id/biometrics')
+  .get(isAdmin, adminUserController.getUserBiometrics);
 
-router.route("/problem/:id")
-    .get(isAdmin, adminProblemController.getProblemById)
-    .put(isAdmin, adminProblemController.updateProblem);
+router.route('/problems')
+  .get(isAdmin, adminProblemController.getAllProblems)
+  .post(isAdmin, adminProblemController.addProblem)
+  .delete(isAdmin, adminProblemController.deleteProblem);
 
-router.route("/problem/testcase/:id")
-    .get(isAdmin, adminProblemController.getTestcaseByProblemId)
-    .put(isAdmin, adminProblemController.updateTestcaseByProblemId);
+router.route('/tags')
+  .get(isAdmin, adminProblemController.getAllTags);
 
+router.route('/problem/:id')
+  .get(isAdmin, adminProblemController.getProblemById)
+  .put(isAdmin, adminProblemController.updateProblem);
 
+router.route('/problem/testcase/:id')
+  .get(isAdmin, adminProblemController.getTestcaseByProblemId)
+  .put(isAdmin, adminProblemController.updateTestcaseByProblemId);
+
+router.route('/flagged-submissions')
+  .get(isAdmin, adminFlaggedSubmissionController.getFlaggedSubmissions);
+
+router.route('/flagged-submissions/:id')
+  .get(isAdmin, adminFlaggedSubmissionController.getFlaggedSubmissionById)
+  .patch(isAdmin, adminFlaggedSubmissionController.updateFlaggedSubmission);
 
 module.exports = router;

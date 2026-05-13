@@ -33,7 +33,7 @@ const requestPasswordReset = (req, res) => {
           return res.status(500).json({ message: "Database error" });
         }
 
-        emailSender(email, 'Sandbox Biometrics Collector - Password Reset', `This is your verification code: ${resetCode}.\nEnter it and change your password. \n\nAdmin and Developer of SBC website`);
+        emailSender(email, 'Kodometria - Password Reset', `This is your verification code: ${resetCode}.\nEnter it and change your password. \n\nAdmin and Developer of Kodometria website`);
 
         return res.status(200).json({ message: "Reset code sent if email exists" });
       }

@@ -195,8 +195,6 @@ const updateUser = async (req, res) => {
   });
 };
 
-
-
 const deleteUser = (req, res) => {
   const userId = req.body.id;
 
@@ -229,11 +227,66 @@ const deleteUser = (req, res) => {
   });
 };
 
+const getUserBiometrics = (req, res) => {
+  const userId = req.params.id;
+
+  if (!userId || userId === "undefined") {
+    return res.status(400).json({
+      message: "Chýba alebo neplatné ID používateľa",
+    });
+  }
+
+  const query = `
+    SELECT
+      b.biometrics_id,
+      b.other_events,
+      b.mouse_moves,
+      b.screen_h,
+      b.screen_w,
+      b.biometrics_owner,
+      b.biometrics_challenge,
+      b.collected_at,
+
+      u.user_id,
+      u.user_name,
+      u.user_email,
+
+      p.id AS problem_id,
+      p.name AS problem_name,
+      p.problem AS problem_function,
+      p.difficulty AS problem_difficulty
+
+    FROM biometrics b
+
+    LEFT JOIN users u
+      ON u.user_id = b.biometrics_owner
+
+    LEFT JOIN problems p
+      ON p.id = b.biometrics_challenge
+
+    WHERE b.biometrics_owner = ?
+
+    ORDER BY b.collected_at DESC;
+  `;
+
+  db.query(query, [userId], (err, result) => {
+    if (err) {
+      console.error("Chyba DB pri načítaní biometrík:", err);
+      return res.status(500).json({
+        message: "Chyba databázy",
+      });
+    }
+
+    res.status(200).json(result);
+  });
+};
+
 module.exports = {
     getAllUsers,
     getUserById,
     addUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserBiometrics
   };
   

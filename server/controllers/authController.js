@@ -38,8 +38,12 @@ const validateUser = async (req, res) => {
             isAdmin: userRecord.user_isAdmin,
         };
 
-        if (!validation) {
+        if (user.isValid == 1) {
             req.session.user = user;
+            return res.status(200).json({ user });
+        }
+
+        if (!validation && user.isValid == 0) { 
             return res.status(200).json({ user });
         }
 

@@ -11,8 +11,10 @@ import CodeEditor from "./pages/CodeEditor";
 import AdminProblemEdit from "./pages/admin/AdminProblemEdit";
 import AdminUserEdit from "./pages/admin/AdminUserEdit";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminUserBiometrics from "./pages/admin/AdminUserBiometrics";
 import AdminProblems from "./pages/admin/AdminProblems";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminFlaggedSubmissions from './pages/admin/AdminFlaggedSubmissions';
 
 import ProtectedRoute from "./hooks/ProtectedRoute";
 import PublicOnlyRoute from "./hooks/PublicOnlyRoute";
@@ -40,10 +42,12 @@ function App() {
             <Route path="/admin/users" element={<AdminRoute> {<AdminUsers />} </AdminRoute>} />
             <Route path="/admin/user/add" element={<AdminRoute> {<AdminUserEdit />} </AdminRoute>} />
             <Route path="/admin/user/:id" element={<AdminRoute> {<AdminUserEdit />} </AdminRoute>} />
+            <Route path="/admin/user/:id/biometrics" element={<AdminRoute> {<AdminUserBiometrics />} </AdminRoute>} />
 
             <Route path="/admin/problems" element={<AdminRoute> {<AdminProblems />} </AdminRoute>} />
             <Route path="/admin/problem/add" element={<AdminRoute> {<AdminProblemEdit />} </AdminRoute>} />
             <Route path="/admin/problem/:id" element={<AdminRoute> {<AdminProblemEdit />} </AdminRoute>} />
+            <Route path="/admin/flagged" element={<AdminFlaggedSubmissions />} />
 
             <Route path="/admin" element={<AdminRoute> {<AdminDashboard />} </AdminRoute>} />
 

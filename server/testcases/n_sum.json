@@ -1,10 +1,9 @@
 {
   "name": "n_sum",
   "tests": [
-    { "input": 6, "expected": 21 },
-    { "input": 7, "expected": 28 },
-    { "input": 8, "expected": 36 },
-    { "input": 9, "expected": 45 },
-    { "input": 10, "expected": 55 }
+    {
+      "input": 6,
+      "expected": 21
+    }
   ]
 }

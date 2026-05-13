@@ -41,7 +41,7 @@ const userRegister = (req, res) => {
                     console.log(err);
                     return res.status(500).json({ message: "User created, but error while assigning validation code." });
                   }
-                  emailSender(email, 'Sandbox Biometrics Collector - Email Validation', `Hi ${name}! Your account has been succesfully registered.\nThis is your verification code: ${code}. You will be prompted to enter it during your first login. \n\nAdmin and Developer of SBC website`);
+                  emailSender(email, 'Kodometria - Email Validation', `Hi ${name}! Your account has been succesfully registered.\nThis is your verification code: ${code}. You will be prompted to enter it during your first login. \n\nAdmin and Developer of Kodometria website`);
                   return res.status(200).json();
                 }
               );  

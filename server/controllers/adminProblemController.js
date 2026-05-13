@@ -1,39 +1,84 @@
-const db = require("../db");
+const db = require('../db');
 const fs = require('fs');
 const path = require('path');
+
+const TESTCASE_DIR = path.join(__dirname, '..', 'testcases');
+
+const ensureTestcaseDirExists = () => {
+  if (!fs.existsSync(TESTCASE_DIR)) {
+    fs.mkdirSync(TESTCASE_DIR, { recursive: true });
+  }
+};
+
+const normalizeTestcaseContent = (content, functionName) => {
+  let parsed;
+
+  if (!content || !String(content).trim()) {
+    parsed = {
+      name: functionName,
+      tests: [],
+    };
+  } else {
+    parsed = JSON.parse(content);
+  }
+
+  parsed.name = functionName;
+
+  if (!Array.isArray(parsed.tests)) {
+    parsed.tests = [];
+  }
+
+  return JSON.stringify(parsed, null, 2);
+};
 
 const getTestcaseByProblemId = (req, res) => {
   const id = req.params.id;
 
   if (!id) {
-    return res.status(400).json({ error: "Missing problem ID" });
+    return res.status(400).json({ error: 'Missing problem ID' });
   }
 
-  db.query("SELECT problem FROM problems WHERE id = ?", [id], (err, results) => {
+  db.query('SELECT problem FROM problems WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
     }
 
     if (results.length === 0) {
-      return res.status(404).json({ error: "Problem not found in database" });
+      return res.status(404).json({ error: 'Problem not found in database' });
     }
 
-    const problemFile = results[0].problem;
+    const functionName = results[0].problem;
 
-    if (!problemFile) {
-      return res.status(400).json({ error: "Missing problem filename" });
+    if (!functionName) {
+      return res.status(400).json({ error: 'Missing function name' });
     }
 
-    const filePath = path.join(__dirname, "..", "testcases", `${problemFile}.json`);
+    ensureTestcaseDirExists();
 
-    fs.readFile(filePath, "utf8", (err, data) => {
+    const filePath = path.join(TESTCASE_DIR, `${functionName}.json`);
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
-        console.error(`Failed to read file ${problemFile}.json:`, err);
-        return res.status(404).json({ error: "Testcase file not found" });
+        const defaultContent = JSON.stringify(
+          {
+            name: functionName,
+            tests: [],
+          },
+          null,
+          2
+        );
+
+        return res.json({ content: defaultContent });
       }
 
-      return res.json({ content: data });
+      try {
+        const normalizedContent = normalizeTestcaseContent(data, functionName);
+        return res.json({ content: normalizedContent });
+      } catch (parseErr) {
+        console.error(`Invalid testcase JSON in ${functionName}.json:`, parseErr);
+        return res.json({ content: data });
+      }
     });
   });
 };
@@ -42,54 +87,73 @@ const updateTestcaseByProblemId = (req, res) => {
   const id = req.params.id;
   const { content } = req.body;
 
-  if (!id || !content) {
-    return res.status(400).json({ error: "Missing problem ID or content" });
+  if (!id) {
+    return res.status(400).json({ error: 'Missing problem ID' });
   }
 
-  db.query("SELECT problem FROM problems WHERE id = ?", [id], (err, results) => {
+  if (content === undefined || content === null) {
+    return res.status(400).json({ error: 'Missing testcase content' });
+  }
+
+  db.query('SELECT problem FROM problems WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
     }
 
     if (results.length === 0) {
-      return res.status(404).json({ error: "Problem not found in database" });
+      return res.status(404).json({ error: 'Problem not found in database' });
     }
 
-    const fileName = results[0].problem;
+    const functionName = results[0].problem;
 
-    if (!fileName) {
-      return res.status(400).json({ error: "Missing problem filename" });
+    if (!functionName) {
+      return res.status(400).json({ error: 'Missing function name' });
     }
 
-    const filePath = path.join(__dirname, "..", "testcases", `${fileName}.json`);
+    let normalizedContent;
 
-    fs.writeFile(filePath, content, "utf8", (err) => {
+    try {
+      normalizedContent = normalizeTestcaseContent(content, functionName);
+    } catch (parseErr) {
+      return res.status(400).json({ error: 'Invalid JSON content' });
+    }
+
+    ensureTestcaseDirExists();
+
+    const filePath = path.join(TESTCASE_DIR, `${functionName}.json`);
+
+    fs.writeFile(filePath, normalizedContent, 'utf8', (err) => {
       if (err) {
-        console.error("Error saving testcase file:", err);
-        return res.status(500).json({ error: "Failed to save file" });
+        console.error('Error saving testcase file:', err);
+        return res.status(500).json({ error: 'Failed to save file' });
       }
 
-      return res.json({ success: true });
+      return res.json({
+        success: true,
+        content: normalizedContent,
+      });
     });
   });
 };
 
 const getAllProblems = (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = 8;
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 8;
   const offset = (page - 1) * limit;
 
   const problemsQuery = `
     SELECT 
       problems.id,
-      problems.name, 
-      problems.difficulty, 
+      problems.name,
+      problems.problem,
+      problems.difficulty,
       IFNULL(GROUP_CONCAT(tags.name ORDER BY tags.name SEPARATOR ', '), '') AS tags
     FROM problems
     LEFT JOIN problem_tags ON problems.id = problem_tags.problem_id
     LEFT JOIN tags ON tags.id = problem_tags.tag_id
     GROUP BY problems.id
+    ORDER BY problems.id DESC
     LIMIT ? OFFSET ?;
   `;
 
@@ -102,19 +166,19 @@ const getAllProblems = (req, res) => {
 
   db.query(problemsQuery, [limit, offset], (err, problemsResult) => {
     if (err) {
-      console.error("Error loading problems:", err);
-      return res.status(500).json({ message: "Database error" });
+      console.error('Error loading problems:', err);
+      return res.status(500).json({ message: 'Database error' });
     }
 
     db.query(countQuery, (err, countResult) => {
       if (err) {
-        console.error("Error loading problems count:", err);
-        return res.status(500).json({ message: "Database error" });
+        console.error('Error loading problems count:', err);
+        return res.status(500).json({ message: 'Database error' });
       }
 
-      const total = countResult[0].total;
+      const total = countResult[0]?.total || 0;
 
-      res.status(200).json({
+      return res.status(200).json({
         problems: problemsResult,
         total,
       });
@@ -126,7 +190,7 @@ const getProblemById = (req, res) => {
   const problemId = req.params.id;
 
   if (!problemId) {
-    return res.status(400).json({ message: "Missing problem ID" });
+    return res.status(400).json({ message: 'Missing problem ID' });
   }
 
   const problemQuery = `
@@ -146,7 +210,7 @@ const getProblemById = (req, res) => {
       problem_starter_code.starter_code_py,
       problem_starter_code.starter_code_java,
       problem_starter_code.starter_code_c,
-      GROUP_CONCAT(tags.name SEPARATOR ', ') AS problem_tags
+      GROUP_CONCAT(tags.name ORDER BY tags.name SEPARATOR ', ') AS problem_tags
     FROM problems
     LEFT JOIN problem_details ON problems.id = problem_details.id
     LEFT JOIN problem_details_en ON problems.id = problem_details_en.id
@@ -155,45 +219,62 @@ const getProblemById = (req, res) => {
     LEFT JOIN problem_tags ON problems.id = problem_tags.problem_id
     LEFT JOIN tags ON problem_tags.tag_id = tags.id
     WHERE problems.id = ?
-    GROUP BY problems.id, problem_examples.id;
+    GROUP BY 
+      problems.id,
+      problems.name,
+      problems.problem,
+      problems.difficulty,
+      problem_details.description,
+      problem_details.input,
+      problem_details.output,
+      problem_details_en.description,
+      problem_details_en.input,
+      problem_details_en.output,
+      problem_examples.example_input,
+      problem_examples.example_output,
+      problem_starter_code.starter_code_py,
+      problem_starter_code.starter_code_java,
+      problem_starter_code.starter_code_c;
   `;
 
-  const allTagsQuery = `SELECT id, name FROM tags`;
+  const allTagsQuery = `SELECT id, name FROM tags ORDER BY name ASC`;
+
   const problemTagsQuery = `
     SELECT tags.name
     FROM problem_tags
     JOIN tags ON tags.id = problem_tags.tag_id
     WHERE problem_tags.problem_id = ?
+    ORDER BY tags.name ASC
   `;
 
   db.query(problemQuery, [problemId], (err, problemResult) => {
     if (err) {
-      console.error("Error fetching problem:", err);
-      return res.status(500).json({ message: "Database error" });
+      console.error('Error fetching problem:', err);
+      return res.status(500).json({ message: 'Database error' });
     }
 
     if (problemResult.length === 0) {
-      return res.status(404).json({ message: "Problem not found" });
+      return res.status(404).json({ message: 'Problem not found' });
     }
 
     const problem = problemResult[0];
 
     db.query(allTagsQuery, (err, allTags) => {
       if (err) {
-        console.error("Error fetching all tags:", err);
-        return res.status(500).json({ message: "Database error" });
+        console.error('Error fetching all tags:', err);
+        return res.status(500).json({ message: 'Database error' });
       }
 
       db.query(problemTagsQuery, [problemId], (err, problemTags) => {
         if (err) {
-          console.error("Error fetching problem tags:", err);
-          return res.status(500).json({ message: "Database error" });
+          console.error('Error fetching problem tags:', err);
+          return res.status(500).json({ message: 'Database error' });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
           problem,
           allTags,
-          selectedTags: problemTags.map(t => t.name),
+          selectedTags: problemTags.map((tag) => tag.name),
         });
       });
     });
@@ -201,7 +282,7 @@ const getProblemById = (req, res) => {
 };
 
 const getAllTags = (req, res) => {
-  const allTagsQuery = `SELECT id, name FROM tags`;
+  const allTagsQuery = `SELECT id, name FROM tags ORDER BY name ASC`;
 
   db.query(allTagsQuery, (err, results) => {
     if (err) {
@@ -213,8 +294,58 @@ const getAllTags = (req, res) => {
   });
 };
 
+const updateProblemTags = (problemId, problemTags, res, successMessage) => {
+  const tagsArray = problemTags
+    ? String(problemTags)
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    : [];
+
+  const deleteTagsQuery = `DELETE FROM problem_tags WHERE problem_id = ?`;
+
+  db.query(deleteTagsQuery, [problemId], (err) => {
+    if (err) {
+      console.error('Error deleting problem tags:', err);
+      return res.status(500).json({ message: 'Database error deleting problem_tags' });
+    }
+
+    if (tagsArray.length === 0) {
+      return res.status(200).json({ message: successMessage });
+    }
+
+    const selectTagsIdsQuery = `SELECT id, name FROM tags WHERE name IN (?)`;
+
+    db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
+      if (err) {
+        console.error('Error selecting tags:', err);
+        return res.status(500).json({ message: 'Database error selecting tags' });
+      }
+
+      const tagIds = tagsRows.map((row) => row.id);
+
+      if (tagIds.length === 0) {
+        return res.status(200).json({ message: successMessage });
+      }
+
+      const insertValues = tagIds.map((tagId) => [problemId, tagId]);
+      const insertTagsQuery = `INSERT INTO problem_tags (problem_id, tag_id) VALUES ?`;
+
+      db.query(insertTagsQuery, [insertValues], (err) => {
+        if (err) {
+          console.error('Error inserting problem tags:', err);
+          return res.status(500).json({ message: 'Database error inserting problem_tags' });
+        }
+
+        return res.status(200).json({ message: successMessage });
+      });
+    });
+  });
+};
+
 const updateProblem = (req, res) => {
   const problemId = req.params.id;
+
   const {
     name,
     difficulty,
@@ -233,7 +364,7 @@ const updateProblem = (req, res) => {
   } = req.body;
 
   if (!problemId) {
-    return res.status(400).json({ message: "Missing problem ID" });
+    return res.status(400).json({ message: 'Missing problem ID' });
   }
 
   const updateProblemQuery = `
@@ -242,28 +373,42 @@ const updateProblem = (req, res) => {
     WHERE id = ?
   `;
 
-  const updateDetailsSkQuery = `
-    UPDATE problem_details
-    SET description = ?, input = ?, output = ?
-    WHERE id = ?
+  const upsertDetailsSkQuery = `
+    INSERT INTO problem_details (id, description, input, output)
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      description = VALUES(description),
+      input = VALUES(input),
+      output = VALUES(output)
   `;
 
-  const updateDetailsEnQuery = `
-    UPDATE problem_details_en
-    SET description = ?, input = ?, output = ?
-    WHERE id = ?
+  const upsertDetailsEnQuery = `
+    INSERT INTO problem_details_en (id, description, input, output)
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      description = VALUES(description),
+      input = VALUES(input),
+      output = VALUES(output)
   `;
 
-  const updateExamplesQuery = `
-    UPDATE problem_examples
-    SET example_input = ?, example_output = ?
+  const deleteExamplesQuery = `
+    DELETE FROM problem_examples
     WHERE problem_id = ?
   `;
 
-  const updateStarterCodeQuery = `
-    UPDATE problem_starter_code
-    SET starter_code_py = ?, starter_code_java = ?, starter_code_c = ?
-    WHERE problem_id = ?
+  const insertExamplesQuery = `
+    INSERT INTO problem_examples (problem_id, example_input, example_output)
+    VALUES (?, ?, ?)
+  `;
+
+  const upsertStarterCodeQuery = `
+    INSERT INTO problem_starter_code 
+      (problem_id, starter_code_py, starter_code_java, starter_code_c)
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      starter_code_py = VALUES(starter_code_py),
+      starter_code_java = VALUES(starter_code_java),
+      starter_code_c = VALUES(starter_code_c)
   `;
 
   db.query(updateProblemQuery, [name, difficulty, problemId], (err) => {
@@ -272,83 +417,61 @@ const updateProblem = (req, res) => {
       return res.status(500).json({ message: 'Database error updating problems' });
     }
 
-    db.query(updateDetailsSkQuery, [description_slovak, input_slovak, output_slovak, problemId], (err) => {
-      if (err) {
-        console.error('Error updating problem_details:', err);
-        return res.status(500).json({ message: 'Database error updating problem_details' });
-      }
-
-      db.query(updateDetailsEnQuery, [description_english, input_english, output_english, problemId], (err) => {
+    db.query(
+      upsertDetailsSkQuery,
+      [problemId, description_slovak, input_slovak, output_slovak],
+      (err) => {
         if (err) {
-          console.error('Error updating problem_details_en:', err);
-          return res.status(500).json({ message: 'Database error updating problem_details_en' });
+          console.error('Error upserting problem_details:', err);
+          return res.status(500).json({ message: 'Database error updating problem_details' });
         }
 
-        db.query(updateExamplesQuery, [example_input, example_output, problemId], (err) => {
-          if (err) {
-            console.error('Error updating problem_examples:', err);
-            return res.status(500).json({ message: 'Database error updating problem_examples' });
-          }
-
-          db.query(updateStarterCodeQuery, [starter_code_py, starter_code_java, starter_code_c, problemId], (err) => {
+        db.query(
+          upsertDetailsEnQuery,
+          [problemId, description_english, input_english, output_english],
+          (err) => {
             if (err) {
-              console.error('Error updating problem_starter_code:', err);
-              return res.status(500).json({ message: 'Database error updating problem_starter_code' });
+              console.error('Error upserting problem_details_en:', err);
+              return res.status(500).json({ message: 'Database error updating problem_details_en' });
             }
 
-            const tagsArray = problem_tags ? problem_tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+            db.query(deleteExamplesQuery, [problemId], (err) => {
+              if (err) {
+                console.error('Error deleting old examples:', err);
+                return res.status(500).json({ message: 'Database error updating examples' });
+              }
 
-            const selectTagsIdsQuery = `SELECT id, name FROM tags WHERE name IN (?)`;
-
-            if (tagsArray.length === 0) {
-              const deleteTagsQuery = `DELETE FROM problem_tags WHERE problem_id = ?`;
-              db.query(deleteTagsQuery, [problemId], (err) => {
+              db.query(insertExamplesQuery, [problemId, example_input, example_output], (err) => {
                 if (err) {
-                  console.error('Error deleting problem tags:', err);
-                  return res.status(500).json({ message: 'Database error deleting problem_tags' });
-                }
-                return res.status(200).json({ message: 'Problem updated successfully without tags' });
-              });
-            } else {
-              db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
-                if (err) {
-                  console.error('Error selecting tags:', err);
-                  return res.status(500).json({ message: 'Database error selecting tags' });
+                  console.error('Error inserting example:', err);
+                  return res.status(500).json({ message: 'Database error inserting example' });
                 }
 
-                const tagIds = tagsRows.map(row => row.id);
-
-                const deleteTagsQuery = `DELETE FROM problem_tags WHERE problem_id = ?`;
-
-                db.query(deleteTagsQuery, [problemId], (err) => {
-                  if (err) {
-                    console.error('Error deleting problem tags:', err);
-                    return res.status(500).json({ message: 'Database error deleting problem_tags' });
-                  }
-
-                  if (tagIds.length === 0) {
-                    return res.status(200).json({ message: 'Problem updated successfully (no tags matched)' });
-                  }
-
-                  const insertValues = tagIds.map(tagId => [problemId, tagId]);
-
-                  const insertTagsQuery = `INSERT INTO problem_tags (problem_id, tag_id) VALUES ?`;
-
-                  db.query(insertTagsQuery, [insertValues], (err) => {
+                db.query(
+                  upsertStarterCodeQuery,
+                  [problemId, starter_code_py, starter_code_java, starter_code_c],
+                  (err) => {
                     if (err) {
-                      console.error('Error inserting problem tags:', err);
-                      return res.status(500).json({ message: 'Database error inserting problem_tags' });
+                      console.error('Error upserting problem_starter_code:', err);
+                      return res.status(500).json({
+                        message: 'Database error updating problem_starter_code',
+                      });
                     }
 
-                    return res.status(200).json({ message: 'Problem updated successfully' });
-                  });
-                });
+                    updateProblemTags(
+                      problemId,
+                      problem_tags,
+                      res,
+                      'Problem updated successfully'
+                    );
+                  }
+                );
               });
-            }
-          });
-        });
-      });
-    });
+            });
+          }
+        );
+      }
+    );
   });
 };
 
@@ -370,6 +493,12 @@ const addProblem = (req, res) => {
     starter_code_c,
     problem_tags,
   } = req.body;
+
+  if (!name || !problem || !difficulty) {
+    return res.status(400).json({
+      message: 'Missing required fields',
+    });
+  }
 
   const insertProblemQuery = `
     INSERT INTO problems (name, problem, difficulty)
@@ -400,84 +529,119 @@ const addProblem = (req, res) => {
     `;
 
     const insertStarterCodeQuery = `
-      INSERT INTO problem_starter_code (problem_id, starter_code_py, starter_code_java, starter_code_c)
+      INSERT INTO problem_starter_code 
+        (problem_id, starter_code_py, starter_code_java, starter_code_c)
       VALUES (?, ?, ?, ?)
     `;
 
-    db.query(insertDetailsSkQuery, [problemId, description_slovak, input_slovak, output_slovak], (err) => {
-      if (err) {
-        console.error('Error inserting SK details:', err);
-        return res.status(500).json({ message: 'Error inserting problem_details' });
-      }
-
-      db.query(insertDetailsEnQuery, [problemId, description_english, input_english, output_english], (err) => {
+    db.query(
+      insertDetailsSkQuery,
+      [problemId, description_slovak, input_slovak, output_slovak],
+      (err) => {
         if (err) {
-          console.error('Error inserting EN details:', err);
-          return res.status(500).json({ message: 'Error inserting problem_details_en' });
+          console.error('Error inserting SK details:', err);
+          return res.status(500).json({ message: 'Error inserting problem_details' });
         }
 
-        db.query(insertExamplesQuery, [problemId, example_input, example_output], (err) => {
-          if (err) {
-            console.error('Error inserting examples:', err);
-            return res.status(500).json({ message: 'Error inserting problem_examples' });
-          }
-
-          db.query(insertStarterCodeQuery, [problemId, starter_code_py, starter_code_java, starter_code_c], (err) => {
+        db.query(
+          insertDetailsEnQuery,
+          [problemId, description_english, input_english, output_english],
+          (err) => {
             if (err) {
-              console.error('Error inserting starter code:', err);
-              return res.status(500).json({ message: 'Error inserting starter_code' });
+              console.error('Error inserting EN details:', err);
+              return res.status(500).json({ message: 'Error inserting problem_details_en' });
             }
 
-            const tagsArray = problem_tags
-              ? problem_tags.split(',').map((t) => t.trim()).filter(Boolean)
-              : [];
-
-              const finishWithFile = () => {
-                const filePath = path.join(__dirname, '..', 'testcases', `${problem}.json`);
-                const defaultContent = JSON.stringify({ name: name, tests: [] }, null, 2);
-              
-                fs.writeFile(filePath, defaultContent, 'utf8', (err) => {
-                  if (err) {
-                    console.error('Error creating testcase file:', err);
-                    return res.status(500).json({ message: 'Problem added, but failed to create testcase file' });
-                  }
-              
-                  return res.status(201).json({ message: 'Problem added successfully with testcase file' });
-                });
-              };
-              
-            if (tagsArray.length === 0) {
-              return finishWithFile();
-            }
-
-            const selectTagsIdsQuery = `SELECT id FROM tags WHERE name IN (?)`;
-
-            db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
+            db.query(insertExamplesQuery, [problemId, example_input, example_output], (err) => {
               if (err) {
-                console.error('Error selecting tag IDs:', err);
-                return res.status(500).json({ message: 'Error selecting tag IDs' });
+                console.error('Error inserting examples:', err);
+                return res.status(500).json({ message: 'Error inserting problem_examples' });
               }
 
-              const insertValues = tagsRows.map(tag => [problemId, tag.id]);
-              if (insertValues.length === 0) {
-                return finishWithFile();
-              }
+              db.query(
+                insertStarterCodeQuery,
+                [problemId, starter_code_py, starter_code_java, starter_code_c],
+                (err) => {
+                  if (err) {
+                    console.error('Error inserting starter code:', err);
+                    return res.status(500).json({ message: 'Error inserting starter_code' });
+                  }
 
-              const insertTagsQuery = `INSERT INTO problem_tags (problem_id, tag_id) VALUES ?`;
+                  const finishWithFile = () => {
+                    ensureTestcaseDirExists();
 
-              db.query(insertTagsQuery, [insertValues], (err) => {
-                if (err) {
-                  console.error('Error inserting problem_tags:', err);
-                  return res.status(500).json({ message: 'Error inserting problem_tags' });
+                    const filePath = path.join(TESTCASE_DIR, `${problem}.json`);
+
+                    const defaultContent = JSON.stringify(
+                      {
+                        name: problem,
+                        tests: [],
+                      },
+                      null,
+                      2
+                    );
+
+                    fs.writeFile(filePath, defaultContent, 'utf8', (err) => {
+                      if (err) {
+                        console.error('Error creating testcase file:', err);
+                        return res.status(500).json({
+                          message: 'Problem added, but failed to create testcase file',
+                        });
+                      }
+
+                      return res.status(201).json({
+                        message: 'Problem added successfully with testcase file',
+                        problemId,
+                      });
+                    });
+                  };
+
+                  const tagsArray = problem_tags
+                    ? String(problem_tags)
+                        .split(',')
+                        .map((tag) => tag.trim())
+                        .filter(Boolean)
+                    : [];
+
+                  if (tagsArray.length === 0) {
+                    return finishWithFile();
+                  }
+
+                  const selectTagsIdsQuery = `SELECT id FROM tags WHERE name IN (?)`;
+
+                  db.query(selectTagsIdsQuery, [tagsArray], (err, tagsRows) => {
+                    if (err) {
+                      console.error('Error selecting tag IDs:', err);
+                      return res.status(500).json({ message: 'Error selecting tag IDs' });
+                    }
+
+                    const insertValues = tagsRows.map((tag) => [problemId, tag.id]);
+
+                    if (insertValues.length === 0) {
+                      return finishWithFile();
+                    }
+
+                    const insertTagsQuery = `
+                      INSERT INTO problem_tags (problem_id, tag_id)
+                      VALUES ?
+                    `;
+
+                    db.query(insertTagsQuery, [insertValues], (err) => {
+                      if (err) {
+                        console.error('Error inserting problem_tags:', err);
+                        return res.status(500).json({ message: 'Error inserting problem_tags' });
+                      }
+
+                      return finishWithFile();
+                    });
+                  });
                 }
-
-                return finishWithFile();
-              });
+              );
             });
-          });
-        });
-      });
-    });
+          }
+        );
+      }
+    );
   });
 };
 
@@ -485,36 +649,60 @@ const deleteProblem = (req, res) => {
   const problemId = req.body.id;
 
   if (!problemId) {
-    return res.status(400).json({ message: "Missing problem ID" });
+    return res.status(400).json({ message: 'Missing problem ID' });
   }
 
-  const queries = [
-    { sql: "DELETE FROM problem_starter_code WHERE problem_id = ?", values: [problemId] },
-    { sql: "DELETE FROM problem_examples WHERE problem_id = ?", values: [problemId] },
-    { sql: "DELETE FROM problem_details_en WHERE id = ?", values: [problemId] },
-    { sql: "DELETE FROM problem_details WHERE id = ?", values: [problemId] },
-    { sql: "DELETE FROM problems WHERE id = ?", values: [problemId] }
-  ];
-
-  const runQueriesSequentially = (index = 0) => {
-    if (index >= queries.length) {
-      return res.status(200).json({ message: "Problem deleted successfully" });
+  db.query('SELECT problem FROM problems WHERE id = ?', [problemId], (err, results) => {
+    if (err) {
+      console.error('Error finding problem before delete:', err);
+      return res.status(500).json({ message: 'Database error during deletion' });
     }
 
-    const { sql, values } = queries[index];
+    const functionName = results[0]?.problem;
 
-    db.query(sql, values, (err) => {
-      if (err) {
-        console.error("Error executing query:", sql, err);
-        return res.status(500).json({ message: "Database error during deletion" });
+    const queries = [
+      { sql: 'DELETE FROM problem_tags WHERE problem_id = ?', values: [problemId] },
+      { sql: 'DELETE FROM problem_starter_code WHERE problem_id = ?', values: [problemId] },
+      { sql: 'DELETE FROM problem_examples WHERE problem_id = ?', values: [problemId] },
+      { sql: 'DELETE FROM problem_details_en WHERE id = ?', values: [problemId] },
+      { sql: 'DELETE FROM problem_details WHERE id = ?', values: [problemId] },
+      { sql: 'DELETE FROM problems WHERE id = ?', values: [problemId] },
+    ];
+
+    const runQueriesSequentially = (index = 0) => {
+      if (index >= queries.length) {
+        if (functionName) {
+          const testcasePath = path.join(TESTCASE_DIR, `${functionName}.json`);
+
+          fs.unlink(testcasePath, (unlinkErr) => {
+            if (unlinkErr && unlinkErr.code !== 'ENOENT') {
+              console.error('Problem deleted, but failed to delete testcase file:', unlinkErr);
+            }
+
+            return res.status(200).json({ message: 'Problem deleted successfully' });
+          });
+        } else {
+          return res.status(200).json({ message: 'Problem deleted successfully' });
+        }
+
+        return;
       }
-      runQueriesSequentially(index + 1);
-    });
-  };
 
-  runQueriesSequentially();
+      const { sql, values } = queries[index];
+
+      db.query(sql, values, (err) => {
+        if (err) {
+          console.error('Error executing query:', sql, err);
+          return res.status(500).json({ message: 'Database error during deletion' });
+        }
+
+        runQueriesSequentially(index + 1);
+      });
+    };
+
+    runQueriesSequentially();
+  });
 };
-
 
 module.exports = {
   getTestcaseByProblemId,
@@ -524,5 +712,5 @@ module.exports = {
   addProblem,
   getAllTags,
   updateProblem,
-  deleteProblem
+  deleteProblem,
 };
